@@ -71,6 +71,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 * [ ] Create YAML specs for dbt models
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
+  * [x] `fact_dispatch_logs`
 
 ---
 

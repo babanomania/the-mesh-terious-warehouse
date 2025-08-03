@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: dispatch_logs
+    tables:
+      - name: raw_dispatch_logs
+        description: "Raw dispatch log events ingested from RabbitMQ."
+
+models:
+  - name: fact_dispatch_logs
+    description: "{{ doc('fact_dispatch_logs') }}"
+    columns:
+      - name: dispatch_id
+        description: "Unique dispatch identifier"
+        tests:
+          - not_null
+          - unique
+      - name: order_id
+        description: "Associated order identifier"
+      - name: vehicle_id
+        description: "Assigned vehicle identifier"
+      - name: status
+        description: "Current dispatch status"
+      - name: eta
+        description: "Estimated time of arrival"
+      - name: event_date
+        description: "Partition column derived from event_ts"
