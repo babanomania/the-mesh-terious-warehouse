@@ -14,7 +14,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [ ] Superset (BI dashboarding)
   * [ ] RabbitMQ (ingestion messaging)
   * [ ] DuckDB (analytics engine)
-* [ ] Create `.env` file for all services
+* [x] Create `.env` file for all services
 * [ ] Provision shared network and volumes for persistence
 
 ---
@@ -72,6 +72,8 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * Ingestion DAGs:
     * [x] `ingest_orders_north.py` → from RabbitMQ to Iceberg
     * [x] `ingest_orders_south.py` → from RabbitMQ to Iceberg
+    * [x] `ingest_orders_east.py` → from RabbitMQ to Iceberg
+    * [x] `ingest_orders_west.py` → from RabbitMQ to Iceberg
     * [ ] `ingest_<event>_<region>.py` → from RabbitMQ to Iceberg
   * [ ] `stg_<entity>.py` → transform raw to staging (via dbt)
   * [ ] `fact_<entity>.py` → load final fact tables
