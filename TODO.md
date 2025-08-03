@@ -34,11 +34,11 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] `produce_restocks_<region>.py`
   * [x] `produce_dispatch_logs_<region>.py`
   * [x] `produce_errors_<region>.py`
-* [ ] For `logistics_core` domain:
+* [x] For `logistics_core` domain:
 
-  * [ ] `produce_vehicle_tracking.py`
-  * [ ] `produce_route_updates.py`
-  * [ ] `produce_delivery_sla.py`
+  * [x] `produce_vehicle_tracking.py`
+  * [x] `produce_route_updates.py`
+  * [x] `produce_delivery_sla.py`
 * [ ] For `ml_insights` domain:
 
   * [ ] `produce_demand_forecast.py`
