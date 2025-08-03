@@ -54,20 +54,34 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
   * [x] `fact_dispatch_logs`
+  * [x] `fact_vehicle_routes`
+  * [x] `fact_order_errors`
+  * [x] `fact_forecast_demand`
+  * [x] `fact_stockout_risks`
   * [x] `dim_warehouse`
   * [x] `dim_vehicle`
   * [x] `dim_product`
   * [x] `dim_route`
+  * [x] `dim_employee`
+  * [x] `dim_date`
+  * [x] `dim_error_code`
 * [x] Partitioning strategy: use `event_date` for all `fact_` tables
 * [ ] Create Iceberg DDLs for DuckDB queries
   * [x] `fact_orders`
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
   * [x] `fact_dispatch_logs`
+  * [x] `fact_vehicle_routes`
+  * [x] `fact_order_errors`
+  * [x] `fact_forecast_demand`
+  * [x] `fact_stockout_risks`
   * [x] `dim_warehouse`
   * [x] `dim_vehicle`
   * [x] `dim_product`
   * [x] `dim_route`
+  * [x] `dim_employee`
+  * [x] `dim_date`
+  * [x] `dim_error_code`
 * [ ] Create YAML specs for dbt models
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
