@@ -1,0 +1,8 @@
+name: 'mesh_warehouse'
+version: '1.0'
+config-version: 2
+
+profile: 'mesh_warehouse'
+
+model-paths: ['dispatch_logs', 'inventory', 'orders', 'returns']
+
