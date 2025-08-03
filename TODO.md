@@ -66,7 +66,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 🔄 DAG Development (Airflow)
 
-* [ ] Create DAG bootstrap template (base class)
+* [x] Create DAG bootstrap template (base class)
 * [ ] DAGs per domain:
 
   * Ingestion DAGs:
@@ -74,6 +74,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] `ingest_orders_south.py` → from RabbitMQ to Iceberg
     * [x] `ingest_orders_east.py` → from RabbitMQ to Iceberg
     * [x] `ingest_orders_west.py` → from RabbitMQ to Iceberg
+    * [x] `ingest_returns_north.py` → from RabbitMQ to Iceberg
     * [ ] `ingest_<event>_<region>.py` → from RabbitMQ to Iceberg
   * [ ] `stg_<entity>.py` → transform raw to staging (via dbt)
   * [ ] `fact_<entity>.py` → load final fact tables
