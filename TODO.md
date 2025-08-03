@@ -173,8 +173,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 ## 🧪 Testing & Validation
 
   * [ ] Add CI test for:
-
-    * [ ] Data generator schema match
+    * [x] Data generator schema match
     * [x] DAG syntax and dry-run
     * [ ] Iceberg schema compliance
 * [ ] Add logging to all generator and DAG processes
