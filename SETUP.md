@@ -40,15 +40,39 @@ A `docker-compose.yml` file will orchestrate MinIO, RabbitMQ, Airflow, OpenMetad
 docker compose up -d
 ```
 
-## 5. Run a Sample Data Generator
+## 5. Run Data Generators
 
-With the services running, produce some sample events:
+With the services running, you can launch one or more mock data generators using
+the provided CLI:
 
 ```bash
-python ingestion/rabbitmq_producers/orders/produce_orders_north.py --burst 10
+python start_generators.py --mode burst --burst-count 10 --domains orders
 ```
 
-The script publishes ten order events for the north warehouse to RabbitMQ.
+This command starts all generator scripts under the `orders` domain and emits
+ten events from each script. Use `--dry-run` to preview commands without
+execution and `--domains all` to run every available domain.
+
+### `start_generators.py` options
+
+| Flag | Description |
+| ---- | ----------- |
+| `--mode {live,burst,replay}` | Generation mode (`live` default) |
+| `--interval N` | Seconds between events in live mode (default `10`) |
+| `--burst-count N` | Events to emit per script in burst mode (default `100`) |
+| `--replay-path PATH` | CSV file to replay in replay mode |
+| `--domains d1,d2` | Comma-separated list of domains (`all` default) |
+| `--dry-run` | Show commands without executing |
+
+### Examples
+
+```bash
+# Live mode for two domains with faster interval
+python start_generators.py --mode live --interval 5 --domains orders,returns
+
+# Replay mode using events from a CSV for all domains
+python start_generators.py --mode replay --replay-path ./data/orders.csv --domains all
+```
 
 ## 6. Run Project Checks
 
