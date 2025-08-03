@@ -21,7 +21,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 📦 Ingestion Layer (Mock Producers)
 
-* [ ] Implement base generator class with reproducible seeded randomness
+* [x] Implement base generator class with reproducible seeded randomness
 * [ ] For each warehouse (`north`, `south`, `east`, `west`):
 
   * [ ] `produce_orders_<region>.py`
