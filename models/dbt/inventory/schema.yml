@@ -7,6 +7,21 @@ sources:
         description: "Raw inventory movements ingested from RabbitMQ."
 
 models:
+  - name: stg_inventory_movements
+    description: "{{ doc('stg_inventory_movements') }}"
+    columns:
+      - name: movement_id
+        description: "Inventory movement identifier"
+        tests:
+          - not_null
+      - name: product_id
+        description: "Product identifier"
+      - name: delta_qty
+        description: "Quantity change"
+      - name: source_type
+        description: "Source of the inventory change"
+      - name: event_date
+        description: "Partition column derived from event_ts"
   - name: fact_inventory_movements
     description: "{{ doc('fact_inventory_movements') }}"
     columns:
