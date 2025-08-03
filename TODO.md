@@ -30,7 +30,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] `produce_orders_east.py`
     * [x] `produce_orders_west.py`
   * [x] `produce_returns_<region>.py`
-  * [ ] `produce_inventory_<region>.py`
+  * [x] `produce_inventory_<region>.py`
   * [ ] `produce_restocks_<region>.py`
   * [ ] `produce_dispatch_logs_<region>.py`
   * [ ] `produce_errors_<region>.py`
