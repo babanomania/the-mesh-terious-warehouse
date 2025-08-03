@@ -6,16 +6,16 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 🔧 Infrastructure Setup
 
-* [ ] Create `docker-compose.yml` for full stack:
+* [x] Create `docker-compose.yml` for full stack:
 
-  * [ ] MinIO (Iceberg storage backend)
-  * [ ] Airflow (DAG orchestration)
-  * [ ] OpenMetadata (metadata layer)
-  * [ ] Superset (BI dashboarding)
-  * [ ] RabbitMQ (ingestion messaging)
-  * [ ] DuckDB (analytics engine)
+  * [x] MinIO (Iceberg storage backend)
+  * [x] Airflow (DAG orchestration)
+  * [x] OpenMetadata (metadata layer)
+  * [x] Superset (BI dashboarding)
+  * [x] RabbitMQ (ingestion messaging)
+  * [x] DuckDB (analytics engine)
 * [x] Create `.env` file for all services
-* [ ] Provision shared network and volumes for persistence
+* [x] Provision shared network and volumes for persistence
 
 ---
 
@@ -131,8 +131,8 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 📊 Superset Integration
 
-* [ ] Add Superset service to Docker Compose
-* [ ] Connect Superset to DuckDB SQL Engine
+* [x] Add Superset service to Docker Compose
+* [x] Connect Superset to DuckDB SQL Engine
 * [ ] Create starter dashboard for:
 
   * [ ] `fact_orders`, `fact_returns`

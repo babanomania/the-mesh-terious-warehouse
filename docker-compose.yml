@@ -1,0 +1,98 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - mesh
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    networks:
+      - mesh
+
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: airflow
+    env_file: .env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR}
+      AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+      AIRFLOW__WEBSERVER__BASE_URL: ${AIRFLOW__WEBSERVER__BASE_URL}
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_data:/opt/airflow
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+      - minio
+    networks:
+      - mesh
+
+  openmetadata:
+    image: openmetadata/server:1.2.2
+    container_name: openmetadata
+    ports:
+      - "8585:8585"
+    environment:
+      OPENMETADATA_SERVER_CONFIG: /openmetadata/config/docker.yaml
+    depends_on:
+      - minio
+    networks:
+      - mesh
+
+  duckdb:
+    image: ghcr.io/duckdb/duckdb:latest
+    container_name: duckdb
+    command: ["tail", "-f", "/dev/null"]
+    volumes:
+      - duckdb_data:/data
+    networks:
+      - mesh
+
+  superset:
+    image: apache/superset:latest
+    container_name: superset
+    env_file: .env
+    environment:
+      SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
+      SUPERSET_SQLALCHEMY_DATABASE_URI: ${SUPERSET_SQLALCHEMY_DATABASE_URI}
+    volumes:
+      - superset_data:/app/superset_home
+      - duckdb_data:/data
+    ports:
+      - "8088:8088"
+    depends_on:
+      - duckdb
+    networks:
+      - mesh
+
+networks:
+  mesh:
+
+volumes:
+  rabbitmq_data:
+  minio_data:
+  airflow_data:
+  superset_data:
+  duckdb_data:
