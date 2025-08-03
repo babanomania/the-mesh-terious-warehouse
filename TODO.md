@@ -22,7 +22,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 ## 📦 Ingestion Layer (Mock Producers)
 
 * [x] Implement base generator class with reproducible seeded randomness
-* [ ] For each warehouse (`north`, `south`, `east`, `west`):
+* [x] For each warehouse (`north`, `south`, `east`, `west`):
 
   * Orders generators:
     * [x] `produce_orders_north.py`
@@ -49,7 +49,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 🗂️ Data Modeling
 
-* [ ] Create Iceberg-compatible schemas for all `fact_` and `dim_` tables (match `AGENTS.md`)
+* [x] Create Iceberg-compatible schemas for all `fact_` and `dim_` tables (match `AGENTS.md`)
   * [x] `fact_orders`
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
@@ -66,7 +66,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] `dim_date`
   * [x] `dim_error_code`
 * [x] Partitioning strategy: use `event_date` for all `fact_` tables
-* [ ] Create Iceberg DDLs for DuckDB queries
+* [x] Create Iceberg DDLs for DuckDB queries
   * [x] `fact_orders`
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
@@ -176,7 +176,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] Data generator schema match
     * [x] DAG syntax and dry-run
     * [x] Iceberg schema compliance
-  * [ ] Add logging to all generator and DAG processes
+  * [x] Add logging to all generator and DAG processes
     * [x] Introduce shared logger utility for producers
     * [x] Apply logging to order event producers and stg_orders DAG
     * [x] Apply logging to return event producers and stg_returns DAG
