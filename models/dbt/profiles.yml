@@ -1,0 +1,6 @@
+mesh_warehouse:
+  outputs:
+    dev:
+      type: duckdb
+      path: warehouse.duckdb
+  target: dev

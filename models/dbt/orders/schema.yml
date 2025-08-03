@@ -7,6 +7,23 @@ sources:
         description: "Raw orders ingested from RabbitMQ."
 
 models:
+  - name: stg_orders
+    description: "{{ doc('stg_orders') }}"
+    columns:
+      - name: order_id
+        description: "Order identifier"
+        tests:
+          - not_null
+      - name: product_id
+        description: "Product identifier"
+      - name: warehouse_id
+        description: "Warehouse identifier"
+      - name: order_ts
+        description: "Timestamp when the order was placed"
+      - name: qty
+        description: "Ordered quantity"
+      - name: event_date
+        description: "Partition column derived from order_ts"
   - name: fact_orders
     description: "{{ doc('fact_orders') }}"
     columns:
