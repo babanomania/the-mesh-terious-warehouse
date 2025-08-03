@@ -58,7 +58,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] `dim_vehicle`
   * [x] `dim_product`
   * [x] `dim_route`
-* [ ] Partitioning strategy: use `event_date` for all `fact_` tables
+* [x] Partitioning strategy: use `event_date` for all `fact_` tables
 * [ ] Create Iceberg DDLs for DuckDB queries
   * [x] `fact_orders`
   * [x] `fact_returns`
@@ -92,7 +92,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] `ingest_dispatch_logs_south.py` → from RabbitMQ to Iceberg
     * [x] `ingest_dispatch_logs_east.py` → from RabbitMQ to Iceberg
     * [x] `ingest_dispatch_logs_west.py` → from RabbitMQ to Iceberg
-    * [ ] `ingest_<event>_<region>.py` → from RabbitMQ to Iceberg
+    * [x] `ingest_inventory_<region>.py` → from RabbitMQ to Iceberg
   * [ ] `stg_<entity>.py` → transform raw to staging (via dbt)
   * [ ] `fact_<entity>.py` → load final fact tables
 * [ ] ML DAGs:
