@@ -8,6 +8,7 @@ deterministic given the same seed value.
 
 from __future__ import annotations
 
+import logging
 from random import Random
 from typing import Sequence, TypeVar
 
@@ -36,3 +37,25 @@ class BaseGenerator:
     def randint(self, a: int, b: int) -> int:
         """Return random integer ``N`` such that ``a <= N <= b``."""
         return self._rng.randint(a, b)
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Return a logger configured to emit to stdout.
+
+    This helper centralizes logger configuration so that individual
+    generator scripts can obtain a ready-to-use logger without repeating
+    boilerplate setup.  If the logger for *name* has not been configured,
+    a :class:`~logging.StreamHandler` with a simple format is attached and
+    the level is set to ``INFO``.
+    """
+
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            "%(asctime)s %(levelname)s %(name)s - %(message)s"
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    return logger
