@@ -2,7 +2,6 @@ import argparse
 import csv
 import json
 import os
-import random
 import time
 import uuid
 from datetime import datetime
@@ -12,8 +11,16 @@ from typing import Iterable
 import pika
 from pydantic import BaseModel, Field, ValidationError
 
+import sys
+from pathlib import Path as _Path
 
-random.seed("orders_order_created")
+# Ensure parent directory (with base_generator) is on path when executed as a script
+sys.path.append(str(_Path(__file__).resolve().parents[1]))
+
+from base_generator import BaseGenerator
+
+
+rng = BaseGenerator("orders_order_created")
 
 
 class OrderEvent(BaseModel):
@@ -33,10 +40,10 @@ WAREHOUSES = ["WH-N1", "WH-N2", "WH-N3"]
 
 def generate_event() -> OrderEvent:
     """Generate a single order event."""
-    product_id = random.choice(PRODUCT_CATALOG)
-    warehouse_id = random.choice(WAREHOUSES)
+    product_id = rng.choice(PRODUCT_CATALOG)
+    warehouse_id = rng.choice(WAREHOUSES)
     order_ts = datetime.utcnow().isoformat()
-    qty = random.randint(1, 20)
+    qty = rng.randint(1, 20)
     return OrderEvent(product_id=product_id, warehouse_id=warehouse_id, order_ts=order_ts, qty=qty)
 
 
