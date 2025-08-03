@@ -18,7 +18,6 @@ sys.path.append(str(_Path(__file__).resolve().parents[1]))
 
 from base_generator import BaseGenerator, get_logger
 
-
 rng = BaseGenerator("returns_return_created_east")
 logger = get_logger(__name__)
 

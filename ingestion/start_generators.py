@@ -17,6 +17,12 @@ ROOT = Path(__file__).resolve().parent
 GEN_DIR = ROOT / "producers"
 COLORS = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
 
+# Ensure the producers directory (with base_generator) is importable
+sys.path.append(str(GEN_DIR))
+from base_generator import get_logger
+
+logger = get_logger(__name__)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -63,11 +69,11 @@ def find_scripts(domains: List[str]) -> Dict[str, List[Path]]:
     for domain in domains:
         domain_dir = GEN_DIR / domain
         if not domain_dir.exists():
-            print(f"[!] Domain not found: {domain}")
+            logger.warning("[!] Domain not found: %s", domain)
             continue
         scripts = sorted(p for p in domain_dir.glob("*.py"))
         if not scripts:
-            print(f"[!] No scripts found for domain: {domain}")
+            logger.warning("[!] No scripts found for domain: %s", domain)
             continue
         scripts_map[domain] = scripts
     return scripts_map
@@ -89,7 +95,9 @@ def build_command(script: Path, args: argparse.Namespace) -> List[str]:
 def stream_output(proc: subprocess.Popen, prefix: str, color: str) -> None:
     assert proc.stdout is not None
     for line in proc.stdout:
-        print(f"{color}[{prefix}] {line.rstrip()}{Style.RESET_ALL}")
+        logger.info(
+            "%s[%s] %s%s", color, prefix, line.rstrip(), Style.RESET_ALL
+        )
 
 
 def main() -> None:
@@ -97,10 +105,10 @@ def main() -> None:
     args = parse_args()
 
     if args.mode == "replay" and not args.replay_path:
-        print("[!] --replay-path is required for replay mode")
+        logger.warning("[!] --replay-path is required for replay mode")
         return
     if args.mode == "replay" and args.replay_path and not args.replay_path.exists():
-        print(f"[!] Replay file not found: {args.replay_path}")
+        logger.warning("[!] Replay file not found: %s", args.replay_path)
 
     if args.domains == "all":
         domains = sorted(p.name for p in GEN_DIR.iterdir() if p.is_dir())
@@ -109,7 +117,7 @@ def main() -> None:
 
     scripts_map = find_scripts(domains)
     if not scripts_map:
-        print("[!] No generator scripts found to run.")
+        logger.warning("[!] No generator scripts found to run.")
         return
 
     processes: List[Tuple[subprocess.Popen, Path]] = []
@@ -122,9 +130,17 @@ def main() -> None:
         for script in scripts:
             cmd = build_command(script, args)
             if args.dry_run:
-                print(f"{color}[DRY-RUN][{domain}] {' '.join(cmd)}{Style.RESET_ALL}")
+                logger.info(
+                    "%s[DRY-RUN][%s] %s%s",
+                    color,
+                    domain,
+                    " ".join(cmd),
+                    Style.RESET_ALL,
+                )
                 continue
-            print(f"{color}[+] Launching: {script}{Style.RESET_ALL}")
+            logger.info(
+                "%s[+] Launching: %s%s", color, script, Style.RESET_ALL
+            )
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
@@ -145,7 +161,7 @@ def main() -> None:
         for proc, _ in processes:
             proc.wait()
     except KeyboardInterrupt:
-        print("\n[!] KeyboardInterrupt received, terminating generators...")
+        logger.warning("\n[!] KeyboardInterrupt received, terminating generators...")
         for proc, _ in processes:
             proc.terminate()
         for proc, _ in processes:
@@ -155,10 +171,12 @@ def main() -> None:
             thread.join()
         for proc, script in processes:
             if proc.returncode:
-                print(f"[!] {script} exited with code {proc.returncode}")
+                logger.warning(
+                    "[!] %s exited with code %s", script, proc.returncode
+                )
 
         elapsed = time.time() - start_time
-        print(f"[+] Total run time: {elapsed:.2f} seconds")
+        logger.info("[+] Total run time: %.2f seconds", elapsed)
 
 
 if __name__ == "__main__":  # pragma: no cover

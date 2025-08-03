@@ -16,7 +16,9 @@ from pathlib import Path as _Path
 # Ensure parent directory (with base_generator) is on path when executed as a script
 sys.path.append(str(_Path(__file__).resolve().parents[1]))
 
-from base_generator import BaseGenerator
+from base_generator import BaseGenerator, get_logger
+
+logger = get_logger(__name__)
 
 
 rng = BaseGenerator("ml_sla_risk")
@@ -57,9 +59,9 @@ def publish_events(
         try:
             payload = event.json()
             channel.basic_publish(exchange="", routing_key=queue, body=payload)
-            print(payload)
+            logger.info(payload)
         except ValidationError as exc:
-            print(f"Validation failed: {exc}")
+            logger.error("Validation failed: %s", exc)
 
 
 def live_mode(channel: pika.adapters.blocking_connection.BlockingChannel, queue: str, interval: int) -> None:
