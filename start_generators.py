@@ -114,6 +114,7 @@ def main() -> None:
 
     processes: List[Tuple[subprocess.Popen, Path]] = []
     threads: List[threading.Thread] = []
+
     start_time = time.time()
 
     for idx, (domain, scripts) in enumerate(scripts_map.items()):
@@ -155,6 +156,7 @@ def main() -> None:
         for proc, script in processes:
             if proc.returncode:
                 print(f"[!] {script} exited with code {proc.returncode}")
+
         elapsed = time.time() - start_time
         print(f"[+] Total run time: {elapsed:.2f} seconds")
 

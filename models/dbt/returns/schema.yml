@@ -7,6 +7,21 @@ sources:
         description: "Raw returns ingested from RabbitMQ."
 
 models:
+  - name: stg_returns
+    description: "{{ doc('stg_returns') }}"
+    columns:
+      - name: return_id
+        description: "Return identifier"
+        tests:
+          - not_null
+      - name: order_id
+        description: "Associated order identifier"
+      - name: return_ts
+        description: "Timestamp when the return occurred"
+      - name: reason_code
+        description: "Return reason code"
+      - name: event_date
+        description: "Partition column derived from return_ts"
   - name: fact_returns
     description: "{{ doc('fact_returns') }}"
     columns:
