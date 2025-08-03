@@ -11,7 +11,7 @@ This project aims to demonstrate how a Lakehouse, Data Mesh, and Data Fabric can
 ## 1. Clone the Repository
 
 ```bash
-git clone https://github.com/example/the-mesh-terious-warehouse.git
+git clone https://github.com/babanomania/the-mesh-terious-warehouse.git
 cd the-mesh-terious-warehouse
 ```
 
