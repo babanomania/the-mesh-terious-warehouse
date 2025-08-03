@@ -1,14 +1,18 @@
 """Airflow DAG to run the demand forecasting task."""
 from __future__ import annotations
 
+import logging
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 
+logger = logging.getLogger(__name__)
+
 
 def run_forecast() -> None:
     """Placeholder callable for demand forecasting logic."""
-    print("Executing demand forecast placeholder")
+    logger.info("Executing demand forecast placeholder")
 
 
 with DAG(
@@ -18,6 +22,7 @@ with DAG(
     catchup=False,
     tags=["ml", "forecast"],
 ) as dag:
+    logger.info("Configuring forecast_demand DAG")
     PythonOperator(
         task_id="run_demand_forecast",
         python_callable=run_forecast,

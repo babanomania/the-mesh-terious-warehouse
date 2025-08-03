@@ -1,9 +1,12 @@
 """Ingest inventory movement events from RabbitMQ to Iceberg for north region."""
 from datetime import datetime
+import logging
 
 from pydantic import BaseModel
 
 from dags.base_ingest import build_ingest_dag
+
+logger = logging.getLogger(__name__)
 
 
 class InventoryEvent(BaseModel):
@@ -36,3 +39,4 @@ dag = build_ingest_dag(
     table_description="Inventory movements fact table",
     date_field="event_ts",
 )
+logger.info("Configured ingest_inventory_north DAG")

@@ -1,7 +1,10 @@
 from datetime import datetime
+import logging
 from pydantic import BaseModel
 
 from dags.base_ingest import build_ingest_dag
+
+logger = logging.getLogger(__name__)
 
 
 class ReturnEvent(BaseModel):
@@ -34,3 +37,4 @@ dag = build_ingest_dag(
     table_description="Returns fact table",
     date_field="return_ts",
 )
+logger.info("Configured ingest_returns_east DAG")

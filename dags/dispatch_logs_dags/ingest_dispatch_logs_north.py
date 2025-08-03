@@ -17,6 +17,8 @@ from metadata.generated.schema.type.entityReference import EntityReference
 from metadata.ingestion.ometa.openmetadata import OpenMetadata
 from metadata.ingestion.ometa.config import OpenMetadataServerConfig
 
+logger = logging.getLogger(__name__)
+
 QUEUE_NAME = "dispatch_logs_north"
 TABLE_FQN = "warehouse.fact_dispatch_logs"
 CATALOG_NAME = os.getenv("ICEBERG_CATALOG", "local")
@@ -57,7 +59,7 @@ def register_with_openmetadata(rows_count: int) -> None:
         description="Dispatch logs fact table",
     )
     metadata.create_or_update(request)
-    logging.info("Registered %s rows to OpenMetadata", rows_count)
+    logger.info("Registered %s rows to OpenMetadata", rows_count)
 
 
 def consume_and_write() -> None:
@@ -86,14 +88,14 @@ def consume_and_write() -> None:
             rows.append(record)
             channel.basic_ack(method_frame.delivery_tag)
         except ValidationError as exc:
-            logging.error("Validation error: %s", exc)
+            logger.error("Validation error: %s", exc)
             channel.basic_nack(method_frame.delivery_tag, requeue=False)
 
     channel.close()
     connection.close()
 
     if not rows:
-        logging.info("No messages consumed")
+        logger.info("No messages consumed")
         return
 
     catalog = load_catalog(CATALOG_NAME)
@@ -119,3 +121,4 @@ def build_dag() -> DAG:
 
 
 dag = build_dag()
+logger.info("Configured ingest_dispatch_logs_north DAG")
