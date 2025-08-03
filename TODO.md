@@ -181,6 +181,8 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] Introduce shared logger utility for producers
   * [x] Apply logging to order event producers and stg_orders DAG
   * [x] Apply logging to return event producers and stg_returns DAG
+  * [x] Apply logging to dispatch log DAGs
+  * [x] Apply logging to inventory DAGs
 * [ ] Implement unit test suite for DAG logic and data contracts
 
 ---
