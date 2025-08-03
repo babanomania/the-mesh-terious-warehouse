@@ -178,6 +178,8 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [ ] DAG syntax and dry-run
   * [ ] Iceberg schema compliance
 * [ ] Add logging to all generator and DAG processes
+  * [x] Introduce shared logger utility for producers
+  * [x] Apply logging to order event producers and stg_orders DAG
 * [ ] Implement unit test suite for DAG logic and data contracts
 
 ---
