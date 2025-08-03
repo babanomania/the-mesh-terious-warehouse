@@ -27,8 +27,8 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * Orders generators:
     * [x] `produce_orders_north.py`
     * [x] `produce_orders_south.py`
-    * [ ] `produce_orders_east.py`
-    * [ ] `produce_orders_west.py`
+    * [x] `produce_orders_east.py`
+    * [x] `produce_orders_west.py`
   * [ ] `produce_returns_<region>.py`
   * [ ] `produce_inventory_<region>.py`
   * [ ] `produce_restocks_<region>.py`
