@@ -112,10 +112,10 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] `stg_orders.py`
   * [ ] `fact_<entity>.py` → load final fact tables
     * [x] `fact_orders.py`
-* [ ] ML DAGs:
+* [x] ML DAGs:
 
-  * [ ] `forecast_demand.py`
-  * [ ] `predict_stockout_risk.py`
+  * [x] `forecast_demand.py`
+  * [x] `predict_stockout_risk.py`
 * [ ] Register DAGs with SLAs + OpenMetadata integration
 
 ---
