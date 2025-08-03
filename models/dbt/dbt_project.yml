@@ -4,5 +4,5 @@ config-version: 2
 
 profile: 'mesh_warehouse'
 
-model-paths: ['dispatch_logs', 'inventory', 'orders', 'returns']
+model-paths: ['dispatch_logs', 'inventory', 'orders', 'returns', 'order_errors']
 
