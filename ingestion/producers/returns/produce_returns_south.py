@@ -18,10 +18,9 @@ sys.path.append(str(_Path(__file__).resolve().parents[1]))
 
 from base_generator import BaseGenerator, get_logger
 
-logger = get_logger(__name__)
-
 
 rng = BaseGenerator("returns_return_created_south")
+logger = get_logger(__name__)
 
 
 class ReturnEvent(BaseModel):
