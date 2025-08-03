@@ -24,7 +24,11 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 * [x] Implement base generator class with reproducible seeded randomness
 * [ ] For each warehouse (`north`, `south`, `east`, `west`):
 
-  * [ ] `produce_orders_<region>.py`
+  * Orders generators:
+    * [x] `produce_orders_north.py`
+    * [x] `produce_orders_south.py`
+    * [ ] `produce_orders_east.py`
+    * [ ] `produce_orders_west.py`
   * [ ] `produce_returns_<region>.py`
   * [ ] `produce_inventory_<region>.py`
   * [ ] `produce_restocks_<region>.py`
@@ -57,7 +61,10 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 * [ ] Create DAG bootstrap template (base class)
 * [ ] DAGs per domain:
 
-  * [ ] `ingest_<event>_<region>.py` → from RabbitMQ to Iceberg
+  * Ingestion DAGs:
+    * [x] `ingest_orders_north.py` → from RabbitMQ to Iceberg
+    * [x] `ingest_orders_south.py` → from RabbitMQ to Iceberg
+    * [ ] `ingest_<event>_<region>.py` → from RabbitMQ to Iceberg
   * [ ] `stg_<entity>.py` → transform raw to staging (via dbt)
   * [ ] `fact_<entity>.py` → load final fact tables
 * [ ] ML DAGs:
