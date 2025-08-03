@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: inventory
+    tables:
+      - name: raw_inventory_movements
+        description: "Raw inventory movements ingested from RabbitMQ."
+
+models:
+  - name: fact_inventory_movements
+    description: "{{ doc('fact_inventory_movements') }}"
+    columns:
+      - name: movement_id
+        description: "Unique inventory movement identifier"
+        tests:
+          - not_null
+          - unique
+      - name: product_id
+        description: "Product identifier"
+      - name: delta_qty
+        description: "Quantity change"
+      - name: source_type
+        description: "Source of the inventory change"
+      - name: event_date
+        description: "Partition column derived from event_ts"
