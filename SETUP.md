@@ -26,10 +26,10 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-Install project dependencies (a `requirements.txt` file will be added in the future):
+Install project dependencies for the ingestion scripts:
 
 ```bash
-pip install -r requirements.txt  # placeholder for future dependency list
+pip install -r ingestion/requirements.txt
 ```
 
 ## 4. Start Supporting Services
@@ -46,7 +46,7 @@ With the services running, you can launch one or more mock data generators using
 the provided CLI:
 
 ```bash
-python start_generators.py --mode burst --burst-count 10 --domains orders
+python ingestion/start_generators.py --mode burst --burst-count 10 --domains orders
 ```
 
 This command starts all generator scripts under the `orders` domain and emits
@@ -68,10 +68,10 @@ execution and `--domains all` to run every available domain.
 
 ```bash
 # Live mode for two domains with faster interval
-python start_generators.py --mode live --interval 5 --domains orders,returns
+python ingestion/start_generators.py --mode live --interval 5 --domains orders,returns
 
 # Replay mode using events from a CSV for all domains
-python start_generators.py --mode replay --replay-path ./data/orders.csv --domains all
+python ingestion/start_generators.py --mode replay --replay-path ./data/orders.csv --domains all
 ```
 
 ## 6. Run Project Checks

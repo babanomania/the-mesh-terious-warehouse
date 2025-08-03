@@ -163,7 +163,7 @@ OpenMetadata serves as the **discovery and governance hub** for all data product
 
 ## Mock Data Generators by Domain
 
-Each domain simulates its own operational activity through dedicated mock data generators. These scripts produce synthetic JSON events to RabbitMQ queues, organized under `/ingestion/rabbitmq_producers/<domain>/`.
+Each domain simulates its own operational activity through dedicated mock data generators. These scripts produce synthetic JSON events to RabbitMQ queues, organized under `/ingestion/producers/<domain>/`.
 
 ### Events Per Domain
 

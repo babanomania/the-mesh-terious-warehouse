@@ -51,7 +51,7 @@ mesh-terious-warehouse/
 ├── docker-compose.yml              # Container orchestration file
 ├── .env                            # Environment variables
 ├── ingestion/
-│   └── rabbitmq_producers/
+│   └── producers/
 │       └── <domain>/               # Mock data generators per domain
 │           ├── produce_orders_<region>.py
 │           ├── produce_returns_<region>.py

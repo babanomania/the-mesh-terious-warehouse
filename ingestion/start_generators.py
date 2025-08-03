@@ -14,7 +14,7 @@ import sys
 from colorama import Fore, Style, init
 
 ROOT = Path(__file__).resolve().parent
-GEN_DIR = ROOT / "ingestion" / "rabbitmq_producers"
+GEN_DIR = ROOT / "producers"
 COLORS = [Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN]
 
 
