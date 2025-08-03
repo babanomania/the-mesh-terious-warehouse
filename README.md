@@ -1,42 +1,53 @@
-# Supply Chain Analytics
+# The Mesh-terious Warehouse
 
-**This platform** is a domain-oriented, metadata-governed analytics platform designed for end-to-end Supply Chain Analytics — spanning distributed warehouse operations, logistics, forecasting, and business intelligence.
+**The Mesh-terious Warehouse** is an opinionated data analytics project built to demystify modern data architecture patterns — one warehouse event at a time.
 
-This project serves as a comprehensive sandbox to **understand and explore modern data architectures** — specifically **Lakehouse**, **Data Mesh**, and **Data Fabric** principles — in a practical, hands-on setting. It simulates a real-world logistics network where decentralized teams collaboratively contribute to a unified analytics platform.
+If you've ever wondered how **Lakehouse**, **Data Mesh**, and **Data Fabric** are supposed to work (and whether they can coexist without a data war), this project is your guided tour through the chaos — minus the vendor slides.
 
-By integrating open-source components like Apache Iceberg, DuckDB, Airflow, OpenMetadata, and RabbitMQ, this platform showcases how to balance team autonomy with enterprise-grade governance in data systems.
+This isn’t a shiny reference implementation or a polished sandbox. It’s a pragmatic, hands-on learning project meant to answer one question:
+**“What actually happens when you try to implement these architecture patterns together?”**
 
-It integrates:
+Here’s what this project attempts to untangle:
 
-* A **Lakehouse** foundation using Apache Iceberg and DuckDB
-* A **Data Mesh** organizational model for domain-based ownership and decentralization
-* A **Data Fabric** layer powered by OpenMetadata for centralized governance, discovery, and lineage
+* Can warehouse teams publish to a Lakehouse without stepping on each other’s schemas?
+* Can a logistics team find anything without shouting into Slack?
+* Can metadata governance exist without a meeting invite?
+* And can ML predictions be versioned like code and not lost in a CSV on someone’s desktop?
+
+To find out, this project brings together:
+
+* **Apache Iceberg** and **DuckDB** to simulate Lakehouse storage and querying
+* A **Data Mesh**-like domain structure where each team owns its data pipelines
+* An **OpenMetadata-powered Data Fabric** to stitch it all together (and tell who broke what, when)
+
+If it works, great. If not, at least we’ll know why the dashboards are blank.
 
 ## Project Context
 
-Meet **ACME Corp**, a global retail and logistics enterprise undergoing a data modernization journey. As their operations scaled across regions, so did their data — leading to silos, duplication, and governance challenges.
+Welcome to **ACME Corp**, where dreams are delivered — often late, sometimes misrouted, and occasionally returned by mistake.
 
-To solve this, ACME adopted this platform combining Lakehouse, Data Mesh, and Data Fabric principles. Here's how each concept empowers their teams:
+ACME is a sprawling global retail-and-logistics giant, with four regional warehouses, a central logistics team, and an ambitious ML squad called “the Insight Avengers.” For years, each team operated in glorious data independence — Excel sheets in the east, SQL scripts in the west, and Post-it notes in the north.
 
-* **Rita**, a data engineer in the North Warehouse team, wants to track inventory shifts and dispatch logs in real-time. With Data Mesh, her team owns their pipelines and schemas independently, publishing directly to Iceberg tables via RabbitMQ + Airflow.
+Naturally, chaos followed.
 
-* **Manoj**, from the central logistics team, manages route tracking and delivery SLAs. He integrates these datasets with warehouse metrics to optimize routes — made possible via shared, versioned lakehouse tables and DuckDB queries.
+**Duplicate KPIs. Conflicting dashboards. Mysterious metrics.** And a company-wide Slack thread titled *“Why does 'inventory\_available' mean five different things?”*
 
-* **Fatima**, part of the ML Insights team, pulls structured data from the lakehouse to train demand forecasting models. Her outputs — stockout risks and SLA breach predictions — are published back into Iceberg and discovered via OpenMetadata.
+ACME decided to untangle this mess by attempting the unthinkable:
 
-* **Trisha**, an enterprise data steward, uses OpenMetadata's lineage view to ensure all domains maintain freshness SLAs, ownership metadata, and glossary alignment.
+* **Let warehouse teams own their own data** (aka, *"Data Mesh, but without the TED talk"*)
+* **Store everything in one open format, not ten** (thanks, **Lakehouse**)
+* **Track where the data came from and who broke it last** (cue **Data Fabric** and its metadata magic)
 
-* **Ajay**, a senior analyst in the business operations team, builds dashboards in Superset by querying facts like `fact_orders` and `fact_forecast_demand`. He relies on the consistent star schema and Iceberg partitioning for fast, reliable insights.
+Each team embraced the transformation in their own way:
 
-* **Mei**, a governance officer, ensures policies like PII tagging and data retention are consistently applied. The data fabric layer gives her visibility across domains and lets her trace data from event to insight.
+* **Rita** from the North Warehouse finally stopped emailing CSVs and now pushes dispatch logs straight to Iceberg.
+* **Manoj** from Logistics uses unified route and order metrics to tell drivers where *not* to go.
+* **Fatima**, the ML engineer, builds predictive models that occasionally outperform “gut feel.”
+* **Trisha**, the data steward, uses OpenMetadata to track freshness, lineage, and who last edited that one dbt model at 2am.
+* **Ajay** runs queries so fast on DuckDB, people assume it’s magic. It’s just partitions.
+* And **Mei** ensures that ACME’s data is clean, compliant, and only mildly terrifying to auditors.
 
-This project reflects how **Lakehouse** simplifies access and performance, **Data Mesh** decentralizes responsibility, and **Data Fabric** provides observability and control — all without compromising agility or analytics depth. It simulates a modern logistics network comprising:
-
-* 4 regionally distributed warehouses
-* A core logistics platform team
-* An ML analytics team for forecasting and anomaly detection
-
-Each team independently owns, transforms, and serves its data products into a unified lakehouse for shared analytics and governance.
+Together, they’ve built what we now call **The Mesh-terious Warehouse** — a place where modern data architectures aren’t just buzzwords… they’re coping mechanisms.
 
 ## Domain Structure and Data Ownership
 
