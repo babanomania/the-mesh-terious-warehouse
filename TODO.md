@@ -117,6 +117,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] `fact_orders.py`
     * [x] `fact_returns.py`
     * [x] `fact_inventory_movements.py`
+    * [x] `fact_dispatch_logs.py`
 * [x] ML DAGs:
 
   * [x] `forecast_demand.py`
