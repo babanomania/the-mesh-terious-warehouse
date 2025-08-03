@@ -1,14 +1,18 @@
 """Airflow DAG to predict stockout risks."""
 from __future__ import annotations
 
+import logging
+
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 
+logger = logging.getLogger(__name__)
+
 
 def predict_stockout() -> None:
     """Placeholder callable for stockout risk prediction."""
-    print("Executing stockout risk prediction placeholder")
+    logger.info("Executing stockout risk prediction placeholder")
 
 
 with DAG(
@@ -18,6 +22,7 @@ with DAG(
     catchup=False,
     tags=["ml", "risk"],
 ) as dag:
+    logger.info("Configuring predict_stockout_risk DAG")
     PythonOperator(
         task_id="run_stockout_risk_prediction",
         python_callable=predict_stockout,

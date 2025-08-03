@@ -17,6 +17,8 @@ from metadata.generated.schema.type.entityReference import EntityReference
 from metadata.ingestion.ometa.config import OpenMetadataServerConfig
 from metadata.ingestion.ometa.openmetadata import OpenMetadata
 
+logger = logging.getLogger(__name__)
+
 CATALOG_NAME = os.getenv("ICEBERG_CATALOG", "local")
 
 
@@ -32,6 +34,8 @@ def build_ingest_dag(
 ) -> DAG:
     """Generic factory for simple RabbitMQ → Iceberg ingestion DAGs."""
 
+    logger.info("Building ingest DAG %s for queue %s", dag_id, queue_name)
+
     def register_with_openmetadata(rows_count: int) -> None:
         server_config = OpenMetadataServerConfig(
             hostPort=os.getenv("OPENMETADATA_HOSTPORT", "http://localhost:8585/api"),
@@ -46,7 +50,7 @@ def build_ingest_dag(
             description=table_description,
         )
         metadata.create_or_update(request)
-        logging.info("Registered %s rows to OpenMetadata", rows_count)
+        logger.info("Registered %s rows to OpenMetadata", rows_count)
 
     def consume_and_write() -> None:
         credentials = pika.PlainCredentials(
@@ -75,14 +79,14 @@ def build_ingest_dag(
                 rows.append(record)
                 channel.basic_ack(method_frame.delivery_tag)
             except ValidationError as exc:
-                logging.error("Validation error: %s", exc)
+                logger.error("Validation error: %s", exc)
                 channel.basic_nack(method_frame.delivery_tag, requeue=False)
 
         channel.close()
         connection.close()
 
         if not rows:
-            logging.info("No messages consumed")
+            logger.info("No messages consumed")
             return
 
         catalog = load_catalog(CATALOG_NAME)

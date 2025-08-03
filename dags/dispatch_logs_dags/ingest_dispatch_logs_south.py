@@ -1,9 +1,12 @@
 """Ingest dispatch log events from RabbitMQ to Iceberg for south region."""
 from datetime import datetime
+import logging
 
 from pydantic import BaseModel
 
 from dags.base_ingest import build_ingest_dag
+
+logger = logging.getLogger(__name__)
 
 
 class DispatchLogEvent(BaseModel):
@@ -38,3 +41,4 @@ dag = build_ingest_dag(
     table_description="Dispatch logs fact table",
     date_field="event_ts",
 )
+logger.info("Configured ingest_dispatch_logs_south DAG")
