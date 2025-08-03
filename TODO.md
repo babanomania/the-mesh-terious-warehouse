@@ -50,9 +50,14 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 ## 🗂️ Data Modeling
 
 * [ ] Create Iceberg-compatible schemas for all `fact_` and `dim_` tables (match `AGENTS.md`)
+  * [x] `fact_returns`
+  * [x] `dim_warehouse`
 * [ ] Partitioning strategy: use `event_date` for all `fact_` tables
 * [ ] Create Iceberg DDLs for DuckDB queries
+  * [x] `fact_returns`
+  * [x] `dim_warehouse`
 * [ ] Create YAML specs for dbt models
+  * [x] `fact_returns`
 
 ---
 

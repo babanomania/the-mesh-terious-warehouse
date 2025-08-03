@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: returns
+    tables:
+      - name: raw_returns
+        description: "Raw returns ingested from RabbitMQ."
+
+models:
+  - name: fact_returns
+    description: "{{ doc('fact_returns') }}"
+    columns:
+      - name: return_id
+        description: "Unique return identifier"
+        tests:
+          - not_null
+          - unique
+      - name: order_id
+        description: "Associated order identifier"
+      - name: return_ts
+        description: "Timestamp when the return occurred"
+      - name: reason_code
+        description: "Return reason code"
+      - name: event_date
+        description: "Partition column derived from return_ts"
