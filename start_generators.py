@@ -8,7 +8,8 @@ import subprocess
 import threading
 import time
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
+import sys
 
 from colorama import Fore, Style, init
 
@@ -73,7 +74,7 @@ def find_scripts(domains: List[str]) -> Dict[str, List[Path]]:
 
 
 def build_command(script: Path, args: argparse.Namespace) -> List[str]:
-    cmd = ["python", str(script), "--mode", args.mode]
+    cmd = [sys.executable, str(script), "--mode", args.mode]
     if args.mode == "live":
         cmd += ["--interval", str(args.interval)]
     elif args.mode == "burst":
@@ -98,18 +99,22 @@ def main() -> None:
     if args.mode == "replay" and not args.replay_path:
         print("[!] --replay-path is required for replay mode")
         return
+    if args.mode == "replay" and args.replay_path and not args.replay_path.exists():
+        print(f"[!] Replay file not found: {args.replay_path}")
 
     if args.domains == "all":
-        domains = [p.name for p in GEN_DIR.iterdir() if p.is_dir()]
+        domains = sorted(p.name for p in GEN_DIR.iterdir() if p.is_dir())
     else:
-        domains = [d.strip() for d in args.domains.split(",") if d.strip()]
+        domains = sorted(d.strip() for d in args.domains.split(",") if d.strip())
 
     scripts_map = find_scripts(domains)
     if not scripts_map:
         print("[!] No generator scripts found to run.")
         return
 
-    processes: List[subprocess.Popen] = []
+    processes: List[Tuple[subprocess.Popen, Path]] = []
+    threads: List[threading.Thread] = []
+
     start_time = time.time()
 
     for idx, (domain, scripts) in enumerate(scripts_map.items()):
@@ -126,24 +131,32 @@ def main() -> None:
                 stderr=subprocess.STDOUT,
                 text=True,
             )
-            processes.append(proc)
-            threading.Thread(
-                target=stream_output, args=(proc, domain, color), daemon=True
-            ).start()
+            processes.append((proc, script))
+            thread = threading.Thread(
+                target=stream_output, args=(proc, domain, color), daemon=False
+            )
+            thread.start()
+            threads.append(thread)
 
     if args.dry_run:
         return
 
     try:
-        for proc in processes:
+        for proc, _ in processes:
             proc.wait()
     except KeyboardInterrupt:
         print("\n[!] KeyboardInterrupt received, terminating generators...")
-        for proc in processes:
+        for proc, _ in processes:
             proc.terminate()
-        for proc in processes:
+        for proc, _ in processes:
             proc.wait()
     finally:
+        for thread in threads:
+            thread.join()
+        for proc, script in processes:
+            if proc.returncode:
+                print(f"[!] {script} exited with code {proc.returncode}")
+
         elapsed = time.time() - start_time
         print(f"[+] Total run time: {elapsed:.2f} seconds")
 
