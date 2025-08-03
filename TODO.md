@@ -86,6 +86,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
   * [x] `fact_dispatch_logs`
+  * [x] `fact_order_errors`
 
 ---
 

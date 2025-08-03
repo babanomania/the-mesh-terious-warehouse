@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: order_errors
+    tables:
+      - name: raw_order_errors
+        description: "Raw order error events ingested from RabbitMQ."
+
+models:
+  - name: fact_order_errors
+    description: "{{ doc('fact_order_errors') }}"
+    columns:
+      - name: error_id
+        description: "Unique error identifier"
+        tests:
+          - not_null
+          - unique
+      - name: order_id
+        description: "Associated order identifier"
+      - name: error_code
+        description: "Error code describing the issue"
+      - name: detected_ts
+        description: "Timestamp when the error was detected"
+      - name: event_date
+        description: "Partition column derived from detected_ts"
