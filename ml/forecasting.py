@@ -83,3 +83,42 @@ def write_stockout_risk(
         )
     con.close()
     return len(rows)
+
+
+def validate_stockout_risk(db_path: str = "warehouse.duckdb") -> int:
+    """Validate stockout risk predictions stored in DuckDB.
+
+    The function checks that ``risk_score`` and ``confidence`` values in
+    ``fact_stockout_risks`` fall within the inclusive range ``[0, 1]``.
+
+    Parameters
+    ----------
+    db_path:
+        Path to the DuckDB database file containing the
+        ``fact_stockout_risks`` table.
+
+    Returns
+    -------
+    int
+        The number of rows validated.
+
+    Raises
+    ------
+    ValueError
+        If any ``risk_score`` or ``confidence`` is outside the
+        ``[0, 1]`` range.
+    """
+
+    con = duckdb.connect(db_path)
+    results = con.execute(
+        "SELECT risk_score, confidence FROM fact_stockout_risks"
+    ).fetchall()
+    con.close()
+
+    for risk_score, confidence in results:
+        if not 0 <= risk_score <= 1:
+            raise ValueError("risk_score must be between 0 and 1")
+        if not 0 <= confidence <= 1:
+            raise ValueError("confidence must be between 0 and 1")
+
+    return len(results)

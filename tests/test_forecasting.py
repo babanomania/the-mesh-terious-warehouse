@@ -45,3 +45,30 @@ def test_write_stockout_risk(tmp_path):
     con = duckdb.connect(str(db_path))
     count = con.sql("SELECT count(*) FROM fact_stockout_risks").fetchone()[0]
     assert count == 2
+
+
+def test_validate_stockout_risk(tmp_path):
+    db_path = tmp_path / "test.duckdb"
+    predictions = [
+        {
+            "product_id": 1,
+            "predicted_date": date(2024, 1, 1),
+            "risk_score": 0.5,
+            "confidence": 0.7,
+        },
+        {
+            "product_id": 2,
+            "predicted_date": date(2024, 1, 2),
+            "risk_score": 0.0,
+            "confidence": 1.0,
+        },
+    ]
+    forecasting.write_stockout_risk(predictions, db_path=str(db_path))
+    assert forecasting.validate_stockout_risk(db_path=str(db_path)) == 2
+    con = duckdb.connect(str(db_path))
+    con.execute(
+        "INSERT INTO fact_stockout_risks VALUES (3, '2024-01-03', 2.0, 0.5)"
+    )
+    con.close()
+    with pytest.raises(ValueError):
+        forecasting.validate_stockout_risk(db_path=str(db_path))

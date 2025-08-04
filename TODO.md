@@ -144,7 +144,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 * [x] Create Jupyter notebook for demand forecasting model (e.g., XGBoost, Prophet)
 * [x] Create Airflow task to run inference notebook or Python script
 * [x] Write outputs to `fact_stockout_risks`
-* [ ] Validate predictions using Iceberg → DuckDB → Superset
+* [x] Validate predictions using Iceberg → DuckDB → Superset
 
 ---
 
@@ -152,11 +152,11 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 * [x] Add Superset service to Docker Compose
 * [x] Connect Superset to DuckDB SQL Engine
-* [ ] Create starter dashboard for:
+* [x] Create starter dashboard for:
 
-  * [ ] `fact_orders`, `fact_returns`
-  * [ ] SLA heatmap from `fact_dispatch_logs`
-  * [ ] Forecast risk summary from `fact_stockout_risks`
+  * [x] `fact_orders`, `fact_returns`
+  * [x] SLA heatmap from `fact_dispatch_logs`
+  * [x] Forecast risk summary from `fact_stockout_risks`
 
 ---
 
