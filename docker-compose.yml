@@ -33,6 +33,15 @@ services:
     container_name: openmetadata_db
     environment:
       MYSQL_ROOT_PASSWORD: openmetadata_password
+      MYSQL_DATABASE: openmetadata_db
+      MYSQL_USER: openmetadata_user
+      MYSQL_PASSWORD: openmetadata_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     ports:
       - "3306:3306"
     volumes:
@@ -78,7 +87,6 @@ services:
   openmetadata:
     image: openmetadata/server:1.2.2
     container_name: openmetadata
-    env_file: .env
     environment:
       DB_HOST: openmetadata_db
       DB_PORT: 3306
@@ -91,9 +99,12 @@ services:
     ports:
       - "8585:8585"
     depends_on:
-      - openmetadata_db
-      - elasticsearch
+      openmetadata_db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
     volumes:
+      - ./scripts/openmetadata-start.sh:/openmetadata-start.sh:ro
       - duckdb_data:/data
     networks:
       - mesh
