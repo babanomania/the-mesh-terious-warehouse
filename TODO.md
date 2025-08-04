@@ -163,18 +163,18 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 ## 📚 Metadata and Governance (OpenMetadata)
 
 * [x] Bootstrap OpenMetadata with default glossary
-* [ ] Ingest metadata from:
+* [x] Ingest metadata from:
 
-  * [ ] Iceberg tables
-  * [ ] dbt models
-  * [ ] Airflow DAGs
-* [ ] Apply:
+  * [x] Iceberg tables
+  * [x] dbt models
+  * [x] Airflow DAGs
+* [x] Apply:
 
-  * [ ] Ownership metadata
-  * [ ] Domain tags
-  * [ ] Glossary terms
-  * [ ] Sensitivity levels (e.g., PII flags)
-* [ ] Enable lineage from ingestion → DAG → dbt → Iceberg → Superset
+  * [x] Ownership metadata
+  * [x] Domain tags
+  * [x] Glossary terms
+  * [x] Sensitivity levels (e.g., PII flags)
+* [x] Enable lineage from ingestion → DAG → dbt → Iceberg → Superset
 
 ---
 
