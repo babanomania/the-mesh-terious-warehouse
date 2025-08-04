@@ -82,14 +82,18 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
   * [x] `dim_employee`
   * [x] `dim_date`
   * [x] `dim_error_code`
-* [ ] Create YAML specs for dbt models
+* [x] Create YAML specs for dbt models
   * [x] `fact_returns`
   * [x] `fact_inventory_movements`
   * [x] `fact_dispatch_logs`
   * [x] `fact_order_errors`
+  * [x] `fact_forecast_demand`
+  * [x] `fact_stockout_risks`
   * [x] `stg_returns`
   * [x] `stg_dispatch_logs`
   * [x] `stg_inventory_movements`
+  * [x] `stg_forecast_demand`
+  * [x] `stg_stockout_risks`
 
 ---
 
