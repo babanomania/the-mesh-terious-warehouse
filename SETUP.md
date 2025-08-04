@@ -40,6 +40,14 @@ A `docker-compose.yml` file will orchestrate MinIO, RabbitMQ, Airflow, OpenMetad
 docker compose up -d
 ```
 
+Once the containers are running, access each service's UI at:
+
+- RabbitMQ Management: http://localhost:15672 (`guest`/`guest`)
+- MinIO Console: http://localhost:9001 (`minioadmin`/`minioadmin`)
+- Airflow Webserver: http://localhost:8080
+- OpenMetadata: http://localhost:8585
+- Superset: http://localhost:8088
+
 ## 5. Run Data Generators
 
 With the services running, you can launch one or more mock data generators using
