@@ -162,7 +162,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 📚 Metadata and Governance (OpenMetadata)
 
-* [ ] Bootstrap OpenMetadata with default glossary
+* [x] Bootstrap OpenMetadata with default glossary
 * [ ] Ingest metadata from:
 
   * [ ] Iceberg tables
