@@ -2,18 +2,31 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import date, timedelta
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 
+from ml.forecasting import write_stockout_risk
+
 logger = logging.getLogger(__name__)
 
 
 def predict_stockout() -> None:
-    """Placeholder callable for stockout risk prediction."""
-    logger.info("Executing stockout risk prediction placeholder")
+    """Generate a minimal stockout risk prediction and persist it."""
+    predictions = [
+        {
+            "product_id": 1,
+            "predicted_date": date.today(),
+            "risk_score": 0.0,
+            "confidence": 1.0,
+        }
+    ]
+    write_stockout_risk(predictions)
+    logger.info(
+        "Wrote %d stockout risk predictions", len(predictions)
+    )
 
 
 with DAG(
