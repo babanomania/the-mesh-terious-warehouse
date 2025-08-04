@@ -28,9 +28,36 @@ services:
     networks:
       - mesh
 
+  openmetadata_db:
+    image: openmetadata/db:1.2.2
+    container_name: openmetadata_db
+    environment:
+      MYSQL_ROOT_PASSWORD: openmetadata_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - openmetadata_db_data:/var/lib/mysql
+    networks:
+      - mesh
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.4
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - mesh
+
   airflow:
     image: apache/airflow:2.8.1
     container_name: airflow
+    command: standalone
     env_file: .env
     environment:
       AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR}
@@ -52,14 +79,20 @@ services:
     image: openmetadata/server:1.2.2
     container_name: openmetadata
     env_file: .env
+    environment:
+      DB_HOST: openmetadata_db
+      DB_PORT: 3306
+      DB_USER: openmetadata_user
+      DB_USER_PASSWORD: openmetadata_password
+      OM_DATABASE: openmetadata_db
+      ELASTICSEARCH_HOST: elasticsearch
+      ELASTICSEARCH_PORT: 9200
+      SEARCH_TYPE: elasticsearch
     ports:
       - "8585:8585"
-    environment:
-      OPENMETADATA_SERVER_CONFIG: /openmetadata/config/docker.yaml
-    volumes:
-      - duckdb_data:/data
     depends_on:
-      - minio
+      - openmetadata_db
+      - elasticsearch
     networks:
       - mesh
 
@@ -87,3 +120,5 @@ volumes:
   airflow_data:
   superset_data:
   duckdb_data:
+  openmetadata_db_data:
+  es_data:
