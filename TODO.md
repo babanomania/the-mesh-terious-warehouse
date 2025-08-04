@@ -100,7 +100,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 ## 🔄 DAG Development (Airflow)
 
 * [x] Create DAG bootstrap template (base class)
-* [ ] DAGs per domain:
+* [x] DAGs per domain:
 
   * Ingestion DAGs:
     * [x] `ingest_orders_north.py` → from RabbitMQ to Iceberg
@@ -141,8 +141,8 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
 ## 🧠 ML Workflow Integration
 
-* [ ] Create Jupyter notebook for demand forecasting model (e.g., XGBoost, Prophet)
-* [ ] Create Airflow task to run inference notebook or Python script
+* [x] Create Jupyter notebook for demand forecasting model (e.g., XGBoost, Prophet)
+* [x] Create Airflow task to run inference notebook or Python script
 * [ ] Write outputs to `fact_stockout_risks`
 * [ ] Validate predictions using Iceberg → DuckDB → Superset
 

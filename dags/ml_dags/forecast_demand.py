@@ -8,12 +8,16 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
 
+from ml.forecasting import moving_average
+
 logger = logging.getLogger(__name__)
 
 
 def run_forecast() -> None:
-    """Placeholder callable for demand forecasting logic."""
-    logger.info("Executing demand forecast placeholder")
+    """Run a simple moving average forecast and log the result."""
+    history = [100, 120, 130, 90, 110, 115, 105]
+    forecast = moving_average(history)
+    logger.info("Forecast for next period: %s", forecast)
 
 
 with DAG(
