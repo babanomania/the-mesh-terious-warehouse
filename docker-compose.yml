@@ -93,6 +93,8 @@ services:
     depends_on:
       - openmetadata_db
       - elasticsearch
+    volumes:
+      - duckdb_data:/data
     networks:
       - mesh
 
