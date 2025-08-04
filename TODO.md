@@ -116,17 +116,21 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] `ingest_dispatch_logs_east.py` → from RabbitMQ to Iceberg
     * [x] `ingest_dispatch_logs_west.py` → from RabbitMQ to Iceberg
     * [x] `ingest_inventory_<region>.py` → from RabbitMQ to Iceberg
-  * [ ] `stg_<entity>.py` → transform raw to staging (via dbt)
+  * [x] `stg_<entity>.py` → transform raw to staging (via dbt)
       * [x] `stg_orders.py`
       * [x] `stg_returns.py`
       * [x] `stg_dispatch_logs.py`
       * [x] `stg_inventory_movements.py`
-  * [ ] `fact_<entity>.py` → load final fact tables
+      * [x] `stg_forecast_demand.py`
+      * [x] `stg_stockout_risks.py`
+  * [x] `fact_<entity>.py` → load final fact tables
     * [x] `fact_orders.py`
     * [x] `fact_returns.py`
     * [x] `fact_inventory_movements.py`
     * [x] `fact_dispatch_logs.py`
     * [x] `fact_order_errors.py`
+    * [x] `fact_forecast_demand.py`
+    * [x] `fact_stockout_risks.py`
   * [x] ML DAGs:
 
   * [x] `forecast_demand.py`
