@@ -31,6 +31,7 @@ services:
   airflow:
     image: apache/airflow:2.8.1
     container_name: airflow
+    command: standalone
     env_file: .env
     environment:
       AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR}
@@ -54,12 +55,8 @@ services:
     env_file: .env
     ports:
       - "8585:8585"
-    environment:
-      OPENMETADATA_SERVER_CONFIG: /openmetadata/config/docker.yaml
     volumes:
       - duckdb_data:/data
-    depends_on:
-      - minio
     networks:
       - mesh
 
