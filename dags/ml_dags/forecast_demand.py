@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -21,6 +22,7 @@ with DAG(
     start_date=days_ago(1),
     catchup=False,
     tags=["ml", "forecast"],
+    default_args={"owner": "data-eng", "retries": 1, "sla": timedelta(minutes=30)},
 ) as dag:
     logger.info("Configuring forecast_demand DAG")
     PythonOperator(

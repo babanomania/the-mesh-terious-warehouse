@@ -135,7 +135,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
 
   * [x] `forecast_demand.py`
   * [x] `predict_stockout_risk.py`
-* [ ] Register DAGs with SLAs + OpenMetadata integration
+* [x] Register DAGs with SLAs + OpenMetadata integration
 
 ---
 
@@ -190,7 +190,7 @@ This document tracks development milestones for the **Mesh-terious Warehouse** p
     * [x] Apply logging to return event producers and stg_returns DAG
     * [x] Apply logging to dispatch log DAGs
     * [x] Apply logging to inventory DAGs
-* [ ] Implement unit test suite for DAG logic and data contracts
+* [x] Implement unit test suite for DAG logic and data contracts
 
 ---
 
