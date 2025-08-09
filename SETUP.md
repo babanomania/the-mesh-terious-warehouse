@@ -40,13 +40,18 @@ A `docker-compose.yml` file will orchestrate MinIO, RabbitMQ, Airflow, OpenMetad
 docker compose up -d
 ```
 
+> **Note:** The Airflow image now includes a system compiler (`g++`) so any Python dependencies requiring C++ compilation (e.g., Iceberg, OpenMetadata ingestion) can build successfully at container build time.
+> **Note:** The Airflow container will automatically install the RabbitMQ client library (`pika`) and the Iceberg Python client (`pyiceberg`) on startup so that ingestion DAGs can import them.
+
+> **Note:** On first startup, default admin users for Airflow and Superset are created automatically using credentials from your `.env` file (defaults shown below).
+
 Once the containers are running, access each service's UI at:
 
 - RabbitMQ Management: http://localhost:15672 (`guest`/`guest`)
 - MinIO Console: http://localhost:9001 (`minioadmin`/`minioadmin`)
-- Airflow Webserver: http://localhost:8080
-- OpenMetadata: http://localhost:8585
-- Superset: http://localhost:8088
+- Airflow Console: http://localhost:8080 (`admin`/`admin`)
+- OpenMetadata: http://localhost:8585 (`admin`/`admin`)
+- Superset: http://localhost:8088 (`admin`/`admin`)
 
 ## 5. Run Data Generators
 

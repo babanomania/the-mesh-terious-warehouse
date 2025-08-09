@@ -6,7 +6,11 @@ from datetime import timedelta
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.utils.dates import days_ago
+import datetime
+from airflow.utils import timezone
+
+def days_ago(n):
+    return timezone.utcnow() - datetime.timedelta(days=n)
 
 from ml.forecasting import moving_average
 

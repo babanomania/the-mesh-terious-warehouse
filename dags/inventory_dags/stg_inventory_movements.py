@@ -7,7 +7,11 @@ from datetime import timedelta
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
+import datetime
+from airflow.utils import timezone
+
+def days_ago(n):
+    return timezone.utcnow() - datetime.timedelta(days=n)
 
 logger = logging.getLogger(__name__)
 DBT_PROJECT_DIR = Path(__file__).resolve().parents[2] / "models" / "dbt"

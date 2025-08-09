@@ -7,7 +7,11 @@ import pika
 import pyarrow as pa
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.utils.dates import days_ago
+import datetime
+from airflow.utils import timezone
+
+def days_ago(n):
+    return timezone.utcnow() - datetime.timedelta(days=n)
 from pydantic import BaseModel, ValidationError
 from pyiceberg.catalog import load_catalog
 from pyiceberg.table import Table
