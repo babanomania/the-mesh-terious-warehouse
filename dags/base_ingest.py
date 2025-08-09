@@ -7,19 +7,26 @@ from typing import Dict, List, Type
 import pika
 import pyarrow as pa
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
+
 import datetime
 from airflow.utils import timezone
 
 def days_ago(n):
+    # Airflow-aware UTC datetime
     return timezone.utcnow() - datetime.timedelta(days=n)
+
 from pydantic import BaseModel, ValidationError
 from pyiceberg.catalog import load_catalog
 from pyiceberg.table import Table
+
 from metadata.generated.schema.api.data.createTable import CreateTableRequest
 from metadata.generated.schema.type.entityReference import EntityReference
-from metadata.ingestion.ometa.config import OpenMetadataServerConfig
-from metadata.ingestion.ometa.openmetadata import OpenMetadata
+from metadata.ingestion.ometa.ometa_api import OpenMetadata
+from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
+    OpenMetadataConnection,
+    AuthProvider,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +48,26 @@ def build_ingest_dag(
     logger.info("Building ingest DAG %s for queue %s", dag_id, queue_name)
 
     def register_with_openmetadata(rows_count: int) -> None:
-        server_config = OpenMetadataServerConfig(
+        server_config = OpenMetadataConnection(
             hostPort=os.getenv("OPENMETADATA_HOSTPORT", "http://localhost:8585/api"),
-            authProvider="no-auth",
+            authProvider=AuthProvider.noAuth,
+            # securityConfig=...  # e.g., OpenMetadataJWTClientConfig(...) if needed
         )
         metadata = OpenMetadata(server_config)
+
         request = CreateTableRequest(
             name=table_fqn.split(".")[-1],
             tableType="Regular",
             columns=columns + [{"name": "event_date", "dataType": "DATE"}],
-            owner=EntityReference(id="00000000-0000-0000-0000-000000000000", type="user"),
+            owner=EntityReference(
+                id="00000000-0000-0000-0000-000000000000",
+                type="user",
+            ),
             description=table_description,
+            # Optionally: fullyQualifiedName=table_fqn
+            # databaseSchema=EntityReference(id=..., type="databaseSchema")
         )
+
         metadata.create_or_update(request)
         logger.info("Registered %s rows to OpenMetadata", rows_count)
 
@@ -100,7 +115,7 @@ def build_ingest_dag(
 
     with DAG(
         dag_id=dag_id,
-        schedule_interval=schedule,
+        schedule=schedule,              # Airflow 3.x uses `schedule`
         start_date=days_ago(1),
         catchup=False,
         default_args={"owner": "data-eng", "retries": 1},

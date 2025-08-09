@@ -6,7 +6,7 @@ import logging
 from datetime import timedelta
 
 from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 import datetime
 from airflow.utils import timezone
 
