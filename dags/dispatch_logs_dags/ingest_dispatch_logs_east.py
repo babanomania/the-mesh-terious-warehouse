@@ -39,7 +39,7 @@ with DAG(
     schedule="@hourly",
     start_date=days_ago(1),
     catchup=False,
-    tags=["ingest"],
+    tags=["ingest", "dispatch_logs", "east"],
     default_args={"owner": "data-eng", "retries": 1},
 ) as dag:
     build_ingest_operator(
