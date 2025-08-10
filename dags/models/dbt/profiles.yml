@@ -2,5 +2,5 @@ mesh_warehouse:
   outputs:
     dev:
       type: duckdb
-      path: warehouse.duckdb
+      path: /data/warehouse.duckdb
   target: dev
