@@ -27,7 +27,7 @@ COLUMNS = [
     {"name": "event_type", "dataType": "STRING"},
     {"name": "movement_id", "dataType": "STRING"},
     {"name": "product_id", "dataType": "STRING"},
-    {"name": "delta_qty", "dataType": "INT"},
+    {"name": "delta_qty", "dataType": "LONG"},
     {"name": "source_type", "dataType": "STRING"},
 ]
 

@@ -30,7 +30,7 @@ COLUMNS = [
     {"name": "product_id", "dataType": "STRING"},
     {"name": "warehouse_id", "dataType": "STRING"},
     {"name": "order_ts", "dataType": "TIMESTAMP"},
-    {"name": "qty", "dataType": "INT"},
+    {"name": "qty", "dataType": "LONG"},
 ]
 
 with DAG(
