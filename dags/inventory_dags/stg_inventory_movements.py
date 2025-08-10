@@ -14,7 +14,7 @@ def days_ago(n):
     return timezone.utcnow() - datetime.timedelta(days=n)
 
 logger = logging.getLogger(__name__)
-DBT_PROJECT_DIR = Path(__file__).resolve().parents[2] / "models" / "dbt"
+DBT_PROJECT_DIR = Path(__file__).resolve().parents[1] / "models" / "dbt"
 DEFAULT_ARGS = {"owner": "data-eng", "retries": 1, "sla": timedelta(minutes=30)}
 
 with DAG(

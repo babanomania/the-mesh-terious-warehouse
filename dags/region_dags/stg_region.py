@@ -15,7 +15,7 @@ def days_ago(n):
 from airflow.models.baseoperator import chain
 
 logger = logging.getLogger(__name__)
-DBT_PROJECT_DIR = Path(__file__).resolve().parents[2] / "models" / "dbt"
+DBT_PROJECT_DIR = Path(__file__).resolve().parents[1] / "models" / "dbt"
 STG_REGION_DIR = DBT_PROJECT_DIR / "stg_region"
 MODEL_NAMES = sorted(p.stem for p in STG_REGION_DIR.glob("*.sql"))
 DEFAULT_ARGS = {"owner": "data-eng", "retries": 1, "sla": timedelta(minutes=30)}
