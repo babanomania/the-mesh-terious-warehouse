@@ -12,7 +12,7 @@ from airflow.utils import timezone
 
 def days_ago(n):
     return timezone.utcnow() - datetime.timedelta(days=n)
-from airflow.utils.helpers import chain
+from airflow.models.baseoperator import chain
 
 logger = logging.getLogger(__name__)
 DBT_PROJECT_DIR = Path(__file__).resolve().parents[2] / "models" / "dbt"
@@ -32,7 +32,7 @@ def make_dbt_task(model_name: str) -> BashOperator:
 
 with DAG(
     dag_id="stg_region",
-    schedule_interval="@daily",
+    schedule="@daily",
     start_date=days_ago(1),
     catchup=False,
     tags=["region", "staging"],

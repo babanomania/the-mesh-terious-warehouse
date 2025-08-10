@@ -26,7 +26,7 @@ def run_forecast() -> None:
 
 with DAG(
     dag_id="forecast_demand",
-    schedule_interval="@daily",
+    schedule="@daily",
     start_date=days_ago(1),
     catchup=False,
     tags=["ml", "forecast"],

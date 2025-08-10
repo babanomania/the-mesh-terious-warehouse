@@ -35,7 +35,7 @@ def predict_stockout() -> None:
 
 with DAG(
     dag_id="predict_stockout_risk",
-    schedule_interval="@daily",
+    schedule="@daily",
     start_date=days_ago(1),
     catchup=False,
     tags=["ml", "risk"],

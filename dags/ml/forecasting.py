@@ -6,7 +6,6 @@ from typing import Any, Iterable, Mapping
 
 import duckdb
 
-
 def moving_average(history: Iterable[float]) -> float:
     """Return the arithmetic mean of historical demand values.
 
@@ -29,7 +28,6 @@ def moving_average(history: Iterable[float]) -> float:
     if not history_list:
         raise ValueError("history must contain at least one value")
     return sum(history_list) / len(history_list)
-
 
 def write_stockout_risk(
     predictions: Iterable[Mapping[str, Any]],
@@ -83,7 +81,6 @@ def write_stockout_risk(
         )
     con.close()
     return len(rows)
-
 
 def validate_stockout_risk(db_path: str = "warehouse.duckdb") -> int:
     """Validate stockout risk predictions stored in DuckDB.

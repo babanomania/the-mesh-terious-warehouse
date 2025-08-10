@@ -20,7 +20,7 @@ DEFAULT_ARGS = {"owner": "data-eng", "retries": 1, "sla": timedelta(minutes=30)}
 
 with DAG(
     dag_id="stg_orders",
-    schedule_interval="@daily",
+    schedule="@daily",
     start_date=days_ago(1),
     catchup=False,
     tags=["orders", "staging"],
