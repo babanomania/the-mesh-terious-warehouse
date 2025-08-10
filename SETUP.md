@@ -19,6 +19,10 @@ cd the-mesh-terious-warehouse
 
 A `.env` file is included in the repository. Review and update any values to match your local environment (ports, credentials, etc.).
 
+The defaults configure an Iceberg catalog backed by MinIO via the Iceberg REST
+server. Update `ICEBERG_REST_URI`, `ICEBERG_WAREHOUSE`, or MinIO credentials in
+the `.env` file if your setup differs.
+
 ## 3. Create a Python Virtual Environment
 
 ```bash
@@ -34,7 +38,8 @@ pip install -r ingestion/requirements.txt
 
 ## 4. Start Supporting Services
 
-A `docker-compose.yml` file will orchestrate MinIO, RabbitMQ, Airflow, OpenMetadata, and other components. Once this file is available, start the stack with:
+A `docker-compose.yml` file orchestrates MinIO, RabbitMQ, an Iceberg REST
+catalog, Airflow, OpenMetadata, and other components. Start the stack with:
 
 ```bash
 docker compose up -d
@@ -49,6 +54,7 @@ Once the containers are running, access each service's UI at:
 
 - RabbitMQ Management: http://localhost:15672 (`guest`/`guest`)
 - MinIO Console: http://localhost:9001 (`minioadmin`/`minioadmin`)
+- Iceberg REST API: http://localhost:8181 (no auth)
 - Airflow Console: http://localhost:8080 (`admin`/`admin`)
 - OpenMetadata: http://localhost:8585 (`admin`/`admin`)
 - Superset: http://localhost:8088 (`admin`/`admin`)

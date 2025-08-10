@@ -17,7 +17,7 @@ def days_ago(n):
     return timezone.utcnow() - datetime.timedelta(days=n)
 
 from pydantic import BaseModel, ValidationError
-from pyiceberg.catalog import load_catalog
+from pyiceberg.catalog import Catalog, load_catalog
 from pyiceberg.table import Table
 
 from metadata.generated.schema.api.data.createTable import CreateTableRequest
@@ -30,7 +30,33 @@ from metadata.generated.schema.entity.services.connections.metadata.openMetadata
 
 logger = logging.getLogger(__name__)
 
-CATALOG_NAME = os.getenv("ICEBERG_CATALOG", "local")
+# Default to a MinIO-backed Iceberg catalog but allow overrides via environment.
+CATALOG_NAME = os.getenv("ICEBERG_CATALOG", "minio")
+
+
+def _load_iceberg_catalog() -> Catalog:
+    """Load an Iceberg catalog configured for local or MinIO storage.
+
+    When ``ICEBERG_CATALOG`` is set to ``minio`` (the default) the catalog is
+    configured to use a MinIO object store. Connection details can be
+    overridden with environment variables. Any other value for
+    ``ICEBERG_CATALOG`` falls back to ``load_catalog`` with that name.
+    """
+
+    if CATALOG_NAME == "minio":
+        return load_catalog(
+            CATALOG_NAME,
+            type=os.getenv("ICEBERG_CATALOG_TYPE", "rest"),
+            uri=os.getenv("ICEBERG_REST_URI", "http://iceberg-rest:8181"),
+            warehouse=os.getenv("ICEBERG_WAREHOUSE", "s3://warehouse"),
+            s3_endpoint=os.getenv("MINIO_ENDPOINT", "http://minio:9000"),
+            s3_access_key_id=os.getenv("MINIO_ACCESS_KEY", os.getenv("MINIO_ROOT_USER", "minioadmin")),
+            s3_secret_access_key=os.getenv(
+                "MINIO_SECRET_KEY", os.getenv("MINIO_ROOT_PASSWORD", "minioadmin")
+            ),
+        )
+
+    return load_catalog(CATALOG_NAME)
 
 
 def build_ingest_operator(
@@ -107,7 +133,7 @@ def build_ingest_operator(
             logger.info("No messages consumed")
             return
 
-        catalog = load_catalog(CATALOG_NAME)
+        catalog = _load_iceberg_catalog()
         table: Table = catalog.load_table(table_fqn)
         table.append(pa.Table.from_pylist(rows))
         register_with_openmetadata(len(rows))
