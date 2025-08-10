@@ -34,6 +34,15 @@ x-airflow-common:
     ICEBERG_CATALOG: ${ICEBERG_CATALOG}
     ICEBERG_REST_URI: ${ICEBERG_REST_URI}
     ICEBERG_WAREHOUSE: ${ICEBERG_WAREHOUSE}
+    AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+    AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    AWS_REGION: us-east-1
+    AWS_DEFAULT_REGION: us-east-1
+    AWS_ENDPOINT_URL: http://minio:9000
+    AWS_EC2_METADATA_DISABLED: "true"
+    OPENMETADATA_JWT_TOKEN: ${OPENMETADATA_JWT_TOKEN}
+    OPENMETADATA_HOSTPORT: ${OPENMETADATA_HOSTPORT}
+
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - airflow-app-volume:/opt/airflow/
@@ -386,6 +395,9 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9200"]
+      interval: 30s
     ports:
       - "9200:9200"
     volumes:
@@ -402,6 +414,9 @@ services:
       ELASTICSEARCH_HOST: openmetadata_es
       ELASTICSEARCH_PORT: 9200
       SEARCH_TYPE: elasticsearch
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8585"]
+      interval: 30s
     ports:
       - "8585:8585"
     depends_on:

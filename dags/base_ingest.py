@@ -44,9 +44,16 @@ def _load_iceberg_catalog() -> "Catalog":
             type=os.getenv("ICEBERG_CATALOG_TYPE", "rest"),
             uri=os.getenv("ICEBERG_REST_URI", "http://iceberg-rest:8181"),
             warehouse=os.getenv("ICEBERG_WAREHOUSE", "s3://warehouse"),
-            s3_endpoint=os.getenv("MINIO_ENDPOINT", "http://minio:9000"),
-            s3_access_key_id=os.getenv("MINIO_ACCESS_KEY", os.getenv("MINIO_ROOT_USER", "minioadmin")),
-            s3_secret_access_key=os.getenv("MINIO_SECRET_KEY", os.getenv("MINIO_ROOT_PASSWORD", "minioadmin")),
+            
+            **{
+                "py-io-impl": "pyiceberg.io.pyarrow.PyArrowFileIO",
+                "s3.endpoint": os.getenv("MINIO_ENDPOINT", "http://minio:9000"),
+                "s3.access-key-id": os.getenv("MINIO_ROOT_USER", "minioadmin"),
+                "s3.secret-access-key": os.getenv("MINIO_ROOT_PASSWORD", "minioadmin"),
+                "s3.path-style-access": "true",
+                "s3.region": os.getenv("AWS_REGION", "us-east-1"),
+                "s3.signing-region": os.getenv("AWS_REGION", "us-east-1"),
+            },
         )
 
     return load_catalog(CATALOG_NAME)
@@ -122,10 +129,14 @@ def build_ingest_operator(
             OpenMetadataConnection,
             AuthProvider,
         )
-
+        from metadata.generated.schema.security.client.openMetadataJWTClientConfig import OpenMetadataJWTClientConfig
+    
         server_config = OpenMetadataConnection(
             hostPort=os.getenv("OPENMETADATA_HOSTPORT", "http://openmetadata:8585/api"),
-            authProvider=AuthProvider.noAuth,
+            authProvider=AuthProvider.basic,
+            securityConfig=OpenMetadataJWTClientConfig(
+                jwtToken=os.getenv("OPENMETADATA_JWT_TOKEN")  # set this env var
+            ),
         )
         metadata = OpenMetadata(server_config)
 
