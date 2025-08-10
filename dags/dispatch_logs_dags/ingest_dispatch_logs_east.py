@@ -4,9 +4,11 @@ import logging
 
 from pydantic import BaseModel
 
-from base_ingest import build_ingest_dag
+from base_ingest import build_ingest_operator, days_ago
+from airflow import DAG
 
 logger = logging.getLogger(__name__)
+# sla is defined in build_ingest_operator
 
 
 class DispatchLogEvent(BaseModel):
@@ -32,13 +34,22 @@ COLUMNS = [
 ]
 
 
-dag = build_ingest_dag(
+with DAG(
     dag_id="ingest_dispatch_logs_east",
-    queue_name="dispatch_logs_east",
-    table_fqn="warehouse.fact_dispatch_logs",
-    event_model=DispatchLogEvent,
-    columns=COLUMNS,
-    table_description="Dispatch logs fact table",
-    date_field="event_ts",
-)
+    schedule="@hourly",
+    start_date=days_ago(1),
+    catchup=False,
+    tags=["ingest"],
+    default_args={"owner": "data-eng", "retries": 1},
+) as dag:
+    build_ingest_operator(
+        dag_id="ingest_dispatch_logs_east",
+        queue_name="dispatch_logs_east",
+        table_fqn="warehouse.fact_dispatch_logs",
+        event_model=DispatchLogEvent,
+        columns=COLUMNS,
+        table_description="Dispatch logs fact table",
+        date_field="event_ts",
+    )
+
 logger.info("Configured ingest_dispatch_logs_east DAG")

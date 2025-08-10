@@ -4,9 +4,11 @@ import logging
 
 from pydantic import BaseModel
 
-from base_ingest import build_ingest_dag
+from base_ingest import build_ingest_operator, days_ago
+from airflow import DAG
 
 logger = logging.getLogger(__name__)
+# sla is defined in build_ingest_operator
 
 
 class InventoryEvent(BaseModel):
@@ -30,13 +32,22 @@ COLUMNS = [
 ]
 
 
-dag = build_ingest_dag(
+with DAG(
     dag_id="ingest_inventory_west",
-    queue_name="inventory_west",
-    table_fqn="warehouse.fact_inventory_movements",
-    event_model=InventoryEvent,
-    columns=COLUMNS,
-    table_description="Inventory movements fact table",
-    date_field="event_ts",
-)
+    schedule="@hourly",
+    start_date=days_ago(1),
+    catchup=False,
+    tags=["ingest"],
+    default_args={"owner": "data-eng", "retries": 1},
+) as dag:
+    build_ingest_operator(
+        dag_id="ingest_inventory_west",
+        queue_name="inventory_west",
+        table_fqn="warehouse.fact_inventory_movements",
+        event_model=InventoryEvent,
+        columns=COLUMNS,
+        table_description="Inventory movements fact table",
+        date_field="event_ts",
+    )
+
 logger.info("Configured ingest_inventory_west DAG")
