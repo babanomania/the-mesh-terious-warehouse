@@ -80,15 +80,15 @@ def find_scripts(domains: List[str]) -> Dict[str, List[Path]]:
 
 
 def build_command(script: Path, args: argparse.Namespace) -> List[str]:
-    cmd = [sys.executable, str(script), "--mode", args.mode]
+    cmd = [sys.executable, str(script)]
     if args.mode == "live":
-        cmd += ["--interval", str(args.interval)]
+        cmd += ["--live", str(args.interval)]
     elif args.mode == "burst":
-        cmd += ["--burst-count", str(args.burst_count)]
+        cmd += ["--burst", str(args.burst_count)]
     elif args.mode == "replay":
         if not args.replay_path:
             raise ValueError("--replay-path is required for replay mode")
-        cmd += ["--replay-path", str(args.replay_path)]
+        cmd += ["--replay", str(args.replay_path)]
     return cmd
 
 
