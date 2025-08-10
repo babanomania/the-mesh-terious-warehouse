@@ -2,5 +2,15 @@ mesh_warehouse:
   outputs:
     dev:
       type: duckdb
-      path: /data/warehouse.duckdb
+      path: ":memory:"
+      extensions:
+        - httpfs
+        - iceberg
+      settings:
+        s3_endpoint: "{{ env_var('MINIO_ENDPOINT') }}"
+        s3_access_key_id: "{{ env_var('MINIO_ROOT_USER') }}"
+        s3_secret_access_key: "{{ env_var('MINIO_ROOT_PASSWORD') }}"
+        s3_region: "us-east-1"
+        s3_url_style: "path"
+        s3_use_ssl: "false"
   target: dev
