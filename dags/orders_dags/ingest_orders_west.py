@@ -8,6 +8,7 @@ from base_ingest import build_ingest_operator, days_ago
 from airflow import DAG
 
 logger = logging.getLogger(__name__)
+# sla is defined in build_ingest_operator
 
 
 class OrderEvent(BaseModel):

@@ -1,10 +1,14 @@
+"""Ingest return events from RabbitMQ to Iceberg for south region."""
 from datetime import datetime
 import logging
+
 from pydantic import BaseModel
 
-from base_ingest import build_ingest_dag
+from base_ingest import build_ingest_operator, days_ago
+from airflow import DAG
 
 logger = logging.getLogger(__name__)
+# sla is defined in build_ingest_operator
 
 
 class ReturnEvent(BaseModel):
@@ -17,7 +21,7 @@ class ReturnEvent(BaseModel):
     reason_code: str
 
 
-columns = [
+COLUMNS = [
     {"name": "event_id", "dataType": "STRING"},
     {"name": "event_ts", "dataType": "TIMESTAMP"},
     {"name": "event_type", "dataType": "STRING"},
@@ -28,13 +32,22 @@ columns = [
 ]
 
 
-dag = build_ingest_dag(
+with DAG(
     dag_id="ingest_returns_south",
-    queue_name="returns_south",
-    table_fqn="warehouse.fact_returns",
-    event_model=ReturnEvent,
-    columns=columns,
-    table_description="Returns fact table",
-    date_field="return_ts",
-)
+    schedule="@hourly",
+    start_date=days_ago(1),
+    catchup=False,
+    tags=["ingest"],
+    default_args={"owner": "data-eng", "retries": 1},
+) as dag:
+    build_ingest_operator(
+        dag_id="ingest_returns_south",
+        queue_name="returns_south",
+        table_fqn="warehouse.fact_returns",
+        event_model=ReturnEvent,
+        columns=COLUMNS,
+        table_description="Returns fact table",
+        date_field="return_ts",
+    )
+
 logger.info("Configured ingest_returns_south DAG")
