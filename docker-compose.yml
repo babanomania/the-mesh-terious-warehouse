@@ -28,6 +28,12 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+    MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+    MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ICEBERG_CATALOG: ${ICEBERG_CATALOG}
+    ICEBERG_REST_URI: ${ICEBERG_REST_URI}
+    ICEBERG_WAREHOUSE: ${ICEBERG_WAREHOUSE}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - airflow-app-volume:/opt/airflow/
@@ -43,6 +49,8 @@ x-airflow-common:
       condition: service_healthy
     minio:
       condition: service_healthy
+    iceberg-rest:
+      condition: service_started
 
 services:
   airflow-postgres:
@@ -303,23 +311,37 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq\
 
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    minio:
+      image: minio/minio:latest
+      command: server /data --console-address ":9001"
+      ports:
+        - "9000:9000"
+        - "9001:9001"
+      environment:
+        MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+        MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+        interval: 30s
+        timeout: 20s
+        retries: 3
+        start_period: 10s
+      volumes:
+        - minio_data:/data
+
+  iceberg-rest:
+    image: tabulario/iceberg-rest:latest
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-      start_period: 10s
-    volumes:
-      - minio_data:/data
+      - CATALOG_WAREHOUSE=${ICEBERG_WAREHOUSE}
+      - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
+      - CATALOG_S3__ENDPOINT=${MINIO_ENDPOINT}
+      - CATALOG_S3__ACCESS_KEY_ID=${MINIO_ROOT_USER}
+      - CATALOG_S3__SECRET_ACCESS_KEY=${MINIO_ROOT_PASSWORD}
+    ports:
+      - "8181:8181"
+    depends_on:
+      minio:
+        condition: service_healthy
 
   openmetadata_db:
     image: openmetadata/db:1.2.2
