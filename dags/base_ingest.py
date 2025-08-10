@@ -33,15 +33,14 @@ logger = logging.getLogger(__name__)
 CATALOG_NAME = os.getenv("ICEBERG_CATALOG", "local")
 
 
-def build_ingest_dag(
+def build_ingest_operator(
     dag_id: str,
     queue_name: str,
     table_fqn: str,
     event_model: Type[BaseModel],
     columns: List[Dict[str, str]],
     table_description: str,
-    date_field: str,
-    schedule: str = "@hourly",
+    date_field: str
 ) -> DAG:
     """Generic factory for simple RabbitMQ → Iceberg ingestion DAGs."""
 
@@ -77,7 +76,7 @@ def build_ingest_dag(
             os.getenv("RABBITMQ_PASSWORD", "guest"),
         )
         parameters = pika.ConnectionParameters(
-            host=os.getenv("RABBITMQ_HOST", "localhost"),
+            host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
             port=int(os.getenv("RABBITMQ_PORT", "5672")),
             credentials=credentials,
         )
@@ -113,16 +112,8 @@ def build_ingest_dag(
         table.append(pa.Table.from_pylist(rows))
         register_with_openmetadata(len(rows))
 
-    with DAG(
-        dag_id=dag_id,
-        schedule=schedule,              # Airflow 3.x uses `schedule`
-        start_date=days_ago(1),
-        catchup=False,
-        default_args={"owner": "data-eng", "retries": 1},
-    ) as dag:
-        PythonOperator(
+    return PythonOperator(
             task_id=f"consume_{queue_name}",
             python_callable=consume_and_write,
             sla=timedelta(minutes=15),
         )
-    return dag

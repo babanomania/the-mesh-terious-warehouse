@@ -4,7 +4,7 @@ import logging
 
 from pydantic import BaseModel
 
-from dags.base_ingest import build_ingest_dag
+from base_ingest import build_ingest_dag
 
 logger = logging.getLogger(__name__)
 

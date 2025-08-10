@@ -4,7 +4,8 @@ import logging
 
 from pydantic import BaseModel
 
-from dags.base_ingest import build_ingest_dag
+from base_ingest import build_ingest_operator, days_ago
+from airflow import DAG
 
 logger = logging.getLogger(__name__)
 
@@ -31,13 +32,21 @@ COLUMNS = [
     {"name": "qty", "dataType": "INT"},
 ]
 
-dag = build_ingest_dag(
+with DAG(
     dag_id="ingest_orders_east",
-    queue_name="orders_east",
-    table_fqn="warehouse.fact_orders",
-    event_model=OrderEvent,
-    columns=COLUMNS,
-    table_description="Orders fact table",
-    date_field="order_ts",
-)
+    schedule="@hourly",
+    start_date=days_ago(1),
+    catchup=False,
+    tags=["ingest"],
+    default_args={"owner": "data-eng", "retries": 1},
+) as dag:
+    build_ingest_operator(
+        dag_id="ingest_orders_east",
+        queue_name="orders_east",
+        table_fqn="warehouse.fact_orders",
+        event_model=OrderEvent,
+        columns=COLUMNS,
+        table_description="Orders fact table",
+        date_field="order_ts",
+    )
 logger.info("Configured ingest_orders_east DAG")
