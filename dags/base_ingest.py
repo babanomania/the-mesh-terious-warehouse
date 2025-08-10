@@ -49,7 +49,7 @@ def build_ingest_dag(
 
     def register_with_openmetadata(rows_count: int) -> None:
         server_config = OpenMetadataConnection(
-            hostPort=os.getenv("OPENMETADATA_HOSTPORT", "http://localhost:8585/api"),
+            hostPort=os.getenv("OPENMETADATA_HOSTPORT", "http://openmetadata:8585/api"),
             authProvider=AuthProvider.noAuth,
             # securityConfig=...  # e.g., OpenMetadataJWTClientConfig(...) if needed
         )
