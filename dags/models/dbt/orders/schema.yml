@@ -2,7 +2,6 @@ version: 2
 
 sources:
   - name: orders
-    database: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
     schema: orders
     tables:
       - name: raw_orders
