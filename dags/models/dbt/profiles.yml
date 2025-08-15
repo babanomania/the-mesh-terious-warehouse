@@ -6,23 +6,18 @@ mesh_warehouse:
       extensions:
         - httpfs
         - iceberg
-      settings:
-        s3_endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000') }}"
-        s3_access_key_id: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
-        s3_secret_access_key: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
-        s3_region: "us-east-1"
-        s3_url_style: "path"
-        s3_use_ssl: "false"
+      secrets:
+        - name: minio
+          type: s3
+          key_id: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
+          secret: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
+          endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000') }}"
+          region: "us-east-1"
+          url_style: "path"
+          use_ssl: "false"
       attach:
         - path: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}"
           type: iceberg
           alias: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
-          options:
-            S3_ENDPOINT: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000') }}"
-            S3_ACCESS_KEY_ID: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
-            S3_SECRET_ACCESS_KEY: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
-            S3_URL_STYLE: "path"
-            S3_USE_SSL: "false"
-            S3_REGION: "us-east-1"
-            S3_SIGNING_REGION: "us-east-1"
+          secret: minio
   target: dev
