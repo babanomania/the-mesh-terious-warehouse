@@ -56,7 +56,7 @@ Once the containers are running, access each service's UI at:
 - MinIO Console: http://localhost:9001 (`minioadmin`/`minioadmin`)
 - Iceberg REST API: http://localhost:8181 (no auth)
 - Airflow Console: http://localhost:8080 (`admin`/`admin`)
-- OpenMetadata: http://localhost:8585 (`admin`/`admin`)
+- OpenMetadata: http://localhost:8585 (`admin@open-metadata.org`/`admin`)
 - Superset: http://localhost:8088 (`admin`/`admin`)
 
 ## 5. Run Data Generators

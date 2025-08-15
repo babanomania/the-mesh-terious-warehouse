@@ -372,7 +372,7 @@ services:
         condition: service_completed_successfully
 
   openmetadata_db:
-    image: openmetadata/db:1.2.2
+    image: openmetadata/db:1.9.1
     environment:
       MYSQL_ROOT_PASSWORD: openmetadata_password
       MYSQL_DATABASE: openmetadata_db
@@ -395,6 +395,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    mem_limit: 1.5g
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:9200"]
       interval: 30s
@@ -403,8 +404,13 @@ services:
     volumes:
       - openmetadata_es_data:/usr/share/elasticsearch/data
 
-  openmetadata:
-    image: openmetadata/server:1.2.2
+  openmetadata-migrate:
+    image: openmetadata/server:1.9.1
+    depends_on:
+      openmetadata_db:
+        condition: service_healthy
+      openmetadata_es:
+        condition: service_started
     environment:
       DB_HOST: openmetadata_db
       DB_PORT: 3306
@@ -414,18 +420,44 @@ services:
       ELASTICSEARCH_HOST: openmetadata_es
       ELASTICSEARCH_PORT: 9200
       SEARCH_TYPE: elasticsearch
+    command: ["./bootstrap/openmetadata-ops.sh", "migrate"]
+    restart: "no"
+
+  openmetadata:
+    image: openmetadata/server:1.9.1
+    environment:
+      DB_HOST: openmetadata_db
+      DB_PORT: 3306
+      DB_USER: openmetadata_user
+      DB_USER_PASSWORD: openmetadata_password
+      OM_DATABASE: openmetadata_db
+      ELASTICSEARCH_HOST: openmetadata_es
+      ELASTICSEARCH_PORT: 9200
+      SEARCH_TYPE: elasticsearch
+      OPENMETADATA_HEAP_OPTS: >
+        -Xms1g -Xmx1g
+        -XX:+UseG1GC
+        -XX:MaxDirectMemorySize=512m
+        -XX:MaxMetaspaceSize=384m
+        -XX:+HeapDumpOnOutOfMemoryError
+        -XX:HeapDumpPath=/data/om.hprof
+    mem_limit: 2.5g      # allow some swap headroom if enabled
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8585"]
-      interval: 30s
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8585/api/v1/system/version >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 90s
     ports:
       - "8585:8585"
     depends_on:
+      openmetadata-migrate:
+        condition: service_completed_successfully
       openmetadata_db:
         condition: service_healthy
       openmetadata_es:
         condition: service_started
     volumes:
-      - ./metadata/openmetadata-start.sh:/openmetadata-start.sh:ro
       - duckdb_data:/data
 
   superset:
