@@ -1,6 +1,7 @@
 """Ingest order events from RabbitMQ to Iceberg for west region."""
 from datetime import datetime
 import logging
+import os
 
 from pydantic import BaseModel
 
@@ -44,7 +45,7 @@ with DAG(
     build_ingest_operator(
         dag_id="ingest_orders_west",
         queue_name="orders_west",
-        table_fqn="orders.raw_orders",
+        table_fqn=f"{os.getenv('ICEBERG_CATALOG', 'minio')}.orders.raw_orders",
         event_model=OrderEvent,
         columns=COLUMNS,
         table_description="Raw orders table",
