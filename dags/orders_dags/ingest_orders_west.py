@@ -44,11 +44,12 @@ with DAG(
     build_ingest_operator(
         dag_id="ingest_orders_west",
         queue_name="orders_west",
-        table_fqn="warehouse.fact_orders",
+        table_fqn="orders.raw_orders",
         event_model=OrderEvent,
         columns=COLUMNS,
-        table_description="Orders fact table",
+        table_description="Raw orders table",
         date_field="order_ts",
     )
 
 logger.info("Configured ingest_orders_west DAG")
+
