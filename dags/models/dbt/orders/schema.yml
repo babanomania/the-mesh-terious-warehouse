@@ -10,6 +10,8 @@ sources:
         external:
           location: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}/orders/raw_orders"
           format: iceberg
+          options:
+            allow_moved_paths: true
 
 models:
   - name: stg_orders
