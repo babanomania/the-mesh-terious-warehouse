@@ -6,18 +6,25 @@ mesh_warehouse:
       extensions:
         - httpfs
         - iceberg
-      secrets:
-        - name: minio
-          type: s3
-          key_id: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
-          secret: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
-          endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000') }}"
-          region: "us-east-1"
-          url_style: "path"
-          use_ssl: "false"
-      attach:
-        - path: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}"
-          type: iceberg
-          alias: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
-          secret: minio
+      settings:
+        s3_region: "{{ env_var('MINIO_REGION', 'us-east-1') }}"
+        s3_use_ssl: false
+        s3_url_style: path
+        s3_endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000')"
+        s3_access_key_id: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
+        s3_secret_access_key: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
+        unsafe_enable_version_guessing: true
   target: dev
+
+# Cheat sheet for DuckDB with Iceberg and HTTPFS
+# INSTALL httpfs;
+# LOAD httpfs;
+# INSTALL iceberg;
+# LOAD iceberg;
+# SET s3_region='us-east-1';
+# SET s3_url_style='path';
+# SET s3_endpoint='localhost:9000';
+# SET s3_access_key_id='minioadmin';  
+# s3_secret_access_key='minioadmin';
+# SET unsafe_enable_version_guessing=true;
+# select * from iceberg_scan('s3://warehouse/orders/raw_orders', allow_moved_paths = true);
