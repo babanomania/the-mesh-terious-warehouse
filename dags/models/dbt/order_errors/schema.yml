@@ -4,14 +4,11 @@ sources:
   - name: order_errors
     database: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
     schema: order_errors
+    config:
+      external_location: "iceberg_scan('{{ env_var('ICEBERG_WAREHOUSE','s3://warehouse') }}/order_errors/{name}', allow_moved_paths = true)"
     tables:
       - name: raw_order_errors
         description: "Raw order error events ingested from RabbitMQ."
-        external:
-          location: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}/order_errors/raw_order_errors"
-          format: iceberg
-          options:
-            allow_moved_paths: true
 
 models:
   - name: fact_order_errors

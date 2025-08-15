@@ -4,14 +4,11 @@ sources:
   - name: returns
     database: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
     schema: returns
+    config:
+      external_location: "iceberg_scan('{{ env_var('ICEBERG_WAREHOUSE','s3://warehouse') }}/returns/{name}', allow_moved_paths = true)"
     tables:
       - name: raw_returns
         description: "Raw returns ingested from RabbitMQ."
-        external:
-          location: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}/returns/raw_returns"
-          format: iceberg
-          options:
-            allow_moved_paths: true
 
 models:
   - name: stg_returns

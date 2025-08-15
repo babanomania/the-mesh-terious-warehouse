@@ -4,14 +4,11 @@ sources:
   - name: inventory
     database: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
     schema: inventory
+    config:
+      external_location: "iceberg_scan('{{ env_var('ICEBERG_WAREHOUSE','s3://warehouse') }}/inventory/{name}', allow_moved_paths = true)"
     tables:
       - name: raw_inventory_movements
         description: "Raw inventory movements ingested from RabbitMQ."
-        external:
-          location: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}/inventory/raw_inventory_movements"
-          format: iceberg
-          options:
-            allow_moved_paths: true
 
 models:
   - name: stg_inventory_movements

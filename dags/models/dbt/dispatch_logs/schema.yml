@@ -4,14 +4,11 @@ sources:
   - name: dispatch_logs
     database: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
     schema: dispatch_logs
+    config:
+      external_location: "iceberg_scan('{{ env_var('ICEBERG_WAREHOUSE','s3://warehouse') }}/dispatch_logs/{name}', allow_moved_paths = true)"
     tables:
       - name: raw_dispatch_logs
         description: "Raw dispatch log events ingested from RabbitMQ."
-        external:
-          location: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}/dispatch_logs/raw_dispatch_logs"
-          format: iceberg
-          options:
-            allow_moved_paths: true
 
 models:
   - name: stg_dispatch_logs

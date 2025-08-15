@@ -6,3 +6,5 @@ profile: 'mesh_warehouse'
 
 model-paths: ['dispatch_logs', 'inventory', 'orders', 'returns', 'order_errors', 'ml_insights']
 
+on-run-start:
+  - "{{ register_upstream_external_models() }}"
