@@ -6,11 +6,18 @@ mesh_warehouse:
       extensions:
         - httpfs
         - iceberg
-      settings:
-        s3_endpoint: "{{ env_var('MINIO_ENDPOINT') }}"
-        s3_access_key_id: "{{ env_var('MINIO_ROOT_USER') }}"
-        s3_secret_access_key: "{{ env_var('MINIO_ROOT_PASSWORD') }}"
-        s3_region: "us-east-1"
-        s3_url_style: "path"
-        s3_use_ssl: "false"
+      secrets:
+        - name: minio
+          type: s3
+          key_id: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
+          secret: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
+          endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000') }}"
+          region: "us-east-1"
+          url_style: "path"
+          use_ssl: "false"
+      attach:
+        - path: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}"
+          type: iceberg
+          alias: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
+          secret: minio
   target: dev
