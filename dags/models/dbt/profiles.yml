@@ -13,4 +13,17 @@ mesh_warehouse:
         s3_region: "us-east-1"
         s3_url_style: "path"
         s3_use_ssl: "false"
+      plugins:
+        - module: iceberg
+          config:
+            catalog: "{{ env_var('ICEBERG_CATALOG', 'minio') }}"
+            uri: "{{ env_var('ICEBERG_REST_URI', 'http://iceberg-rest:8181') }}"
+            warehouse: "{{ env_var('ICEBERG_WAREHOUSE', 's3://warehouse') }}"
+            py-io-impl: "pyiceberg.io.pyarrow.PyArrowFileIO"
+            s3.endpoint: "{{ env_var('MINIO_ENDPOINT', 'http://minio:9000') }}"
+            s3.access-key-id: "{{ env_var('MINIO_ROOT_USER', 'minioadmin') }}"
+            s3.secret-access-key: "{{ env_var('MINIO_ROOT_PASSWORD', 'minioadmin') }}"
+            s3.path-style-access: "true"
+            s3.region: "us-east-1"
+            s3.signing-region: "us-east-1"
   target: dev
