@@ -1,25 +1,14 @@
 version: 2
 
-sources:
-  - name: dimensions
-    schema: dimensions
-    config:
-      external_location: "iceberg_scan('{{ env_var('ICEBERG_WAREHOUSE','s3://warehouse') }}/dimensions/{name}', allow_moved_paths = true)"
-    tables:
-      - name: dim_date
-      - name: dim_employee
-      - name: dim_error_code
-      - name: dim_product
-      - name: dim_route
-      - name: dim_vehicle
-      - name: dim_warehouse
-
 models:
   - name: dim_date
     description: "Calendar dimension with common date breakdowns."
     columns:
       - name: date_id
         description: "Date key (DATE)"
+        tests:
+          - not_null
+          - unique
       - name: day
         description: "Day of month"
       - name: week
@@ -38,6 +27,9 @@ models:
     columns:
       - name: employee_id
         description: "Employee identifier"
+        tests:
+          - not_null
+          - unique
       - name: role
         description: "Role title"
       - name: assigned_warehouse
@@ -52,6 +44,9 @@ models:
     columns:
       - name: error_code
         description: "Error code"
+        tests:
+          - not_null
+          - unique
       - name: description
         description: "Human-friendly description"
       - name: severity_level
@@ -64,6 +59,9 @@ models:
     columns:
       - name: product_id
         description: "Product identifier"
+        tests:
+          - not_null
+          - unique
       - name: name
         description: "Product name"
       - name: category
@@ -78,6 +76,9 @@ models:
     columns:
       - name: route_id
         description: "Route identifier"
+        tests:
+          - not_null
+          - unique
       - name: region_covered
         description: "Region covered"
       - name: avg_duration
@@ -90,6 +91,9 @@ models:
     columns:
       - name: vehicle_id
         description: "Vehicle identifier"
+        tests:
+          - not_null
+          - unique
       - name: type
         description: "Vehicle type"
       - name: capacity
@@ -104,6 +108,9 @@ models:
     columns:
       - name: warehouse_id
         description: "Warehouse identifier"
+        tests:
+          - not_null
+          - unique
       - name: region
         description: "Region"
       - name: manager

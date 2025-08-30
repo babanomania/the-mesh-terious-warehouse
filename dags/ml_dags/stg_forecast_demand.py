@@ -29,5 +29,5 @@ with DAG(
     logger.info("Configuring stg_forecast_demand DAG")
     BashOperator(
         task_id="dbt_run_stg_forecast_demand",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --models stg_forecast_demand",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --select stg_forecast_demand",
     )

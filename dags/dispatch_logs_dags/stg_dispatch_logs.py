@@ -28,5 +28,5 @@ with DAG(
     logger.info("Configuring stg_dispatch_logs DAG")
     BashOperator(
         task_id="dbt_run_stg_dispatch_logs",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --models stg_dispatch_logs",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --select stg_dispatch_logs",
     )

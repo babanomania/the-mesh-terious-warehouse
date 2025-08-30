@@ -10,7 +10,7 @@ import duckdb
 
 
 DEFAULT_DUCKDB_PATH = os.getenv(
-    "DUCKDB_PATH", "s3://warehouse/fact_stockout_risks"
+    "DUCKDB_PATH", "s3://warehouse/ml_insights/raw_stockout_risk"
 )
 
 

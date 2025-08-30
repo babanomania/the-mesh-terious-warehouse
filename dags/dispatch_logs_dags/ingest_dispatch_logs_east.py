@@ -45,10 +45,10 @@ with DAG(
     build_ingest_operator(
         dag_id="ingest_dispatch_logs_east",
         queue_name="dispatch_logs_east",
-        table_fqn="warehouse.fact_dispatch_logs",
+        table_fqn="dispatch_logs.raw_dispatch_logs",
         event_model=DispatchLogEvent,
         columns=COLUMNS,
-        table_description="Dispatch logs fact table",
+        table_description="Raw dispatch logs table",
         date_field="event_ts",
     )
 

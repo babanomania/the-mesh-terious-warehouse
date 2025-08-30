@@ -43,10 +43,10 @@ with DAG(
     build_ingest_operator(
         dag_id="ingest_returns_south",
         queue_name="returns_south",
-        table_fqn="warehouse.fact_returns",
+        table_fqn="returns.raw_returns",
         event_model=ReturnEvent,
         columns=COLUMNS,
-        table_description="Returns fact table",
+        table_description="Raw returns table",
         date_field="return_ts",
     )
 

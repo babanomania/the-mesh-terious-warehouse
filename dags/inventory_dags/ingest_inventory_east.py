@@ -43,12 +43,11 @@ with DAG(
     build_ingest_operator(
         dag_id="ingest_inventory_east",
         queue_name="inventory_east",
-        table_fqn="warehouse.fact_inventory_movements",
+        table_fqn="inventory.raw_inventory_movements",
         event_model=InventoryEvent,
         columns=COLUMNS,
-        table_description="Inventory movements fact table",
+        table_description="Raw inventory movements table",
         date_field="event_ts",
     )
 
 logger.info("Configured ingest_inventory_east DAG")
-
