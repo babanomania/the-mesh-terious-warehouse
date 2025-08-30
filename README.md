@@ -64,7 +64,7 @@ This project adopts **Data Mesh** principles to ensure scalability, accountabili
 | `logistics_core`  | Central Logistics Team | `vehicle_tracking`, `delivery_sla`, `routes`                                                                      |
 | `ml_insights`     | ML/Forecasting Team    | `demand_forecast`, `sla_risk`, `stockout_risk`                                                                    |
 
-Each team manages its data using separate dbt models, Airflow DAGs, and RabbitMQ producers, enabling independent evolution and deployment of pipelines.
+Each team manages its data using Airflow DAGs, DuckDB SQL/Arrow transforms, and RabbitMQ producers, enabling independent evolution and deployment of pipelines.
 
 ## Data Model Design
 
@@ -74,10 +74,9 @@ This project uses a **Lakehouse Star Schema** to combine flexibility with perfor
 
 - `docker-compose.yml`: Orchestrates MinIO, RabbitMQ, Iceberg REST, Airflow, OpenMetadata, and Superset
 - `ingestion/producers/`: Mock event generators per domain (orders, returns, inventory, logistics_core, ml_insights)
-- `dags/`: Airflow DAGs per subject area with per-region ingestion, staging, and fact loads
-- `dags/*_dags/curate_*`: Airflow curation DAGs writing facts/dims to Iceberg
+- `dags/`: Airflow DAGs per subject area (including `*_dags/curate_*` curation DAGs) writing facts/dims to Iceberg
 - `superset/`: Bootstrap for DuckDB connection and example queries
-- `notebooks/`: ML notebooks for forecasting and analysis
+- `tests/`: DuckDB view helpers and validations against Iceberg tables in MinIO
 
 ### Fact Tables (Expanded)
 
@@ -115,7 +114,7 @@ This project adheres to all major **Lakehouse** architecture principles:
 | Unified Storage          | One object store (MinIO) for raw, cleaned, modeled data   |
 | Batch + Streaming Ingest | RabbitMQ + Airflow pipelines per domain                   |
 | BI + ML Interoperability | Shared Iceberg tables accessed by DuckDB and ML notebooks |
-| SQL Analytics            | dbt and Superset queries run directly on Iceberg tables   |
+| SQL Analytics            | Superset (via DuckDB) queries run directly on Iceberg     |
 | Data Versioning          | Snapshots, rollback, and time travel supported            |
 
 Lakehouse tables are maintained in **Star Schema**, optimized for both exploration and machine learning workflows.
@@ -129,12 +128,12 @@ This project operationalizes the four pillars of **Data Mesh**:
 
 * Each warehouse, logistics, and ML team manages their own data pipelines end-to-end.
 * Domains are structured as independent units within the repository via per-subject Airflow DAG packages under `dags/*_dags/` and per-domain generators under `ingestion/producers/<domain>/`.
-* Teams own ingestion, transformation (dbt), metadata, and KPIs.
+* Teams own ingestion, transformation (Airflow + DuckDB), metadata, and KPIs.
 
 ### 2. Data as a Product
 
 * Each data product is versioned, documented, and has an explicit owner in OpenMetadata.
-* dbt models are documented with freshness policies, business definitions, and expectations.
+* Tables and columns are documented with freshness policies, business definitions, and expectations in OpenMetadata.
 
 ### 3. Self-Serve Infrastructure
 
@@ -155,9 +154,9 @@ This project integrates a **Data Fabric** layer to provide enterprise-grade meta
 
 | Feature                     | Implementation in this project                         |
 | --------------------------- | ------------------------------------------------------ |
-| Unified Metadata Catalog    | OpenMetadata ingests all Iceberg tables and dbt models |
+| Unified Metadata Catalog    | OpenMetadata catalogs Iceberg tables; DAGs update metadata where applicable |
 | Ownership and Tagging       | Domain ownership, update frequency, sensitivity labels |
-| Lineage Tracking            | From RabbitMQ → Airflow → Iceberg → dbt → Superset     |
+| Lineage Tracking            | From RabbitMQ → Airflow → Iceberg → Superset           |
 | Glossary and Business Terms | Defined in OpenMetadata and linked to columns/models   |
 | Policy Enforcement          | Column-level PII and sensitive tags with access roles  |
 | Search and Discovery        | Unified search UI for technical and business users     |
@@ -289,3 +288,4 @@ Use the DuckDB from the Docker volume for quick verification:
 Notes:
 - The named volume is declared as `duckdb_data` in `docker-compose.yml` and is mounted at `/data` in services.
 - Ensure ingestion/curation DAGs have produced data; tests fail if a data product is missing or has zero rows.
+- `MINIO_ENDPOINT` defaults to `http://localhost:9000` for host-based tests; override if you’ve changed ports.

@@ -48,9 +48,9 @@ The `docker-compose.yml` orchestrates MinIO, RabbitMQ, Iceberg REST, Airflow (Ce
 docker compose up -d
 ```
 
-> Airflow Python deps: To run ingestion DAGs that use RabbitMQ and Iceberg, ensure the containers install `pika`, `pyiceberg`, and `pyarrow`. The simplest path is to set in your `.env`:
+> Airflow Python deps: To run ingestion and curation DAGs that use RabbitMQ, DuckDB, and Iceberg, ensure the containers install `pika`, `duckdb`, `pyiceberg`, and `pyarrow` (plus `openmetadata-ingestion` if you want metadata updates). The simplest path is to set in your `.env`:
 >
-> `_PIP_ADDITIONAL_REQUIREMENTS="pika pyiceberg pyarrow"`
+> `_PIP_ADDITIONAL_REQUIREMENTS="pika duckdb pyiceberg pyarrow openmetadata-ingestion"`
 >
 > Alternatively, build a custom Airflow image with these packages baked in.
 
@@ -101,7 +101,7 @@ python ingestion/start_generators.py --mode replay --replay-path ./data/orders.c
 
 ## 6. Run Project Checks
 
-Run the test suite with `pytest` (tests now include per-domain DuckDB view verification that connects to MinIO and probe Iceberg tables):
+Run the test suite with `pytest` (tests include per-domain DuckDB view verification that connects to MinIO and probes Iceberg tables):
 
 ```bash
 pytest -q
@@ -110,6 +110,7 @@ pytest -q
 Notes:
 - Ensure `DUCKDB_PATH`, `ICEBERG_WAREHOUSE`, and `MINIO_*` env vars are set for your environment so tests can reach DuckDB and MinIO.
 - Tests fail if a data product is missing or the corresponding DuckDB view is empty (> 0 rows required). Populate data via generators and DAGs before running tests.
+ - Tip: You can copy the DuckDB file from the Docker volume and point tests at it; see the Testing section in `README.md` for a quick copy-and-run flow.
 
 ## 7. Shut Down
 
