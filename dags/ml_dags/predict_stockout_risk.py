@@ -2,19 +2,17 @@
 from __future__ import annotations
 
 import logging
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
-import datetime
 from airflow.utils import timezone
 
 def days_ago(n):
-    return timezone.utcnow() - datetime.timedelta(days=n)
+    return timezone.utcnow() - timedelta(days=n)
 
 import os
 import uuid
-from datetime import date, datetime
 
 from base_ingest import _load_iceberg_catalog, _ensure_table_exists
 
