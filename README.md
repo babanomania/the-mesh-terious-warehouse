@@ -51,7 +51,7 @@ Together, they’ve built what we now call **The Mesh-terious Warehouse** — a 
 
 ## Domain Structure and Data Ownership
 
-This projec adopts **Data Mesh** principles to ensure scalability, accountability, and agility across teams. Each functional domain owns its own ingestion, transformation, and documentation pipeline.
+This project adopts **Data Mesh** principles to ensure scalability, accountability, and agility across teams. Each functional domain owns its own ingestion, transformation, and documentation pipeline.
 
 ### Defined Domains
 
@@ -68,7 +68,16 @@ Each team manages its data using separate dbt models, Airflow DAGs, and RabbitMQ
 
 ## Data Model Design
 
-This projec uses a **Lakehouse Star Schema** to combine flexibility with performance.
+This project uses a **Lakehouse Star Schema** to combine flexibility with performance.
+
+## Project Layout
+
+- `docker-compose.yml`: Orchestrates MinIO, RabbitMQ, Iceberg REST, Airflow, OpenMetadata, and Superset
+- `ingestion/producers/`: Mock event generators per domain (orders, returns, inventory, logistics_core, ml_insights)
+- `dags/`: Airflow DAGs per subject area with per-region ingestion, staging, and fact loads
+- `dags/models/dbt/`: dbt models (staging, facts, and dimensions) used by transformation DAGs
+- `superset/`: Bootstrap for DuckDB connection and example queries
+- `notebooks/`: ML notebooks for forecasting and analysis
 
 ### Fact Tables (Expanded)
 
@@ -96,7 +105,7 @@ All facts are partitioned and versioned using Apache Iceberg with full schema ev
 
 ## Lakehouse Principles
 
-This projec adheres to all major **Lakehouse** architecture principles:
+This project adheres to all major **Lakehouse** architecture principles:
 
 | Principle                | This Implementation                                 |
 | ------------------------ | --------------------------------------------------------- |
@@ -114,12 +123,12 @@ Lakehouse tables are maintained in **Star Schema**, optimized for both explorati
 
 ## Data Mesh
 
-This projec operationalizes the four pillars of **Data Mesh**:
+This project operationalizes the four pillars of **Data Mesh**:
 
 ### 1. Domain-Oriented Ownership
 
 * Each warehouse, logistics, and ML team manages their own data pipelines end-to-end.
-* Domains are structured as independent units within the repository (`/mesh/domains/<domain_name>`).
+* Domains are structured as independent units within the repository via per-subject Airflow DAG packages under `dags/*_dags/` and per-domain generators under `ingestion/producers/<domain>/`.
 * Teams own ingestion, transformation (dbt), metadata, and KPIs.
 
 ### 2. Data as a Product

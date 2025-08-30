@@ -17,11 +17,15 @@ cd the-mesh-terious-warehouse
 
 ## 2. Configure Environment Variables
 
-A `.env` file is included in the repository. Review and update any values to match your local environment (ports, credentials, etc.).
+Create a `.env` file in the repo root (if not present) and review/update values to match your local environment (ports, credentials, etc.).
 
-The defaults configure an Iceberg catalog backed by MinIO via the Iceberg REST
-server. Update `ICEBERG_REST_URI`, `ICEBERG_WAREHOUSE`, or MinIO credentials in
-the `.env` file if your setup differs.
+Key variables for the local stack:
+
+- `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`: MinIO credentials
+- `ICEBERG_REST_URI` / `ICEBERG_WAREHOUSE`: Iceberg REST catalog and warehouse path
+- `RABBITMQ_USER` / `RABBITMQ_PASSWORD`: RabbitMQ credentials
+- `OPENMETADATA_HOSTPORT` / `OPENMETADATA_JWT_TOKEN`: OpenMetadata API access (if used by DAGs)
+- `_PIP_ADDITIONAL_REQUIREMENTS`: Space-separated pip packages installed in Airflow containers at startup (see step 4)
 
 ## 3. Create a Python Virtual Environment
 
@@ -38,17 +42,19 @@ pip install -r ingestion/requirements.txt
 
 ## 4. Start Supporting Services
 
-A `docker-compose.yml` file orchestrates MinIO, RabbitMQ, an Iceberg REST
-catalog, Airflow, OpenMetadata, and other components. Start the stack with:
+The `docker-compose.yml` orchestrates MinIO, RabbitMQ, Iceberg REST, Airflow (Celery, Redis, Postgres), OpenMetadata, and Superset. Start the stack with:
 
 ```bash
 docker compose up -d
 ```
 
-> **Note:** The Airflow image now includes a system compiler (`g++`) so any Python dependencies requiring C++ compilation (e.g., Iceberg, OpenMetadata ingestion) can build successfully at container build time.
-> **Note:** The Airflow container will automatically install the RabbitMQ client library (`pika`) and the Iceberg Python client (`pyiceberg`) on startup so that ingestion DAGs can import them.
+> Airflow Python deps: To run ingestion DAGs that use RabbitMQ and Iceberg, ensure the containers install `pika`, `pyiceberg`, and `pyarrow`. The simplest path is to set in your `.env`:
+>
+> `_PIP_ADDITIONAL_REQUIREMENTS="pika pyiceberg pyarrow"`
+>
+> Alternatively, build a custom Airflow image with these packages baked in.
 
-> **Note:** On first startup, default admin users for Airflow and Superset are created automatically using credentials from your `.env` file (defaults shown below).
+> First-run users: Default admin users for Airflow and Superset are created automatically using credentials from your `.env` file (defaults shown below).
 
 Once the containers are running, access each service's UI at:
 
@@ -95,13 +101,13 @@ python ingestion/start_generators.py --mode replay --replay-path ./data/orders.c
 
 ## 6. Run Project Checks
 
-Basic tests can be run with `pytest`:
+Run the test suite with `pytest`:
 
 ```bash
-pytest
+pytest -q
 ```
 
-At this stage there are no unit tests, so the command should report `0 tests`.
+The repo includes tests for generator schemas, DAG syntax, Iceberg schema, metadata bootstrapping, and basic ML utilities.
 
 ## 7. Shut Down
 
