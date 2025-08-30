@@ -9,7 +9,7 @@ import duckdb
 
 
 DEFAULT_DUCKDB_PATH = os.getenv(
-    "DUCKDB_PATH", "s3://warehouse/fact_stockout_risks"
+    "DUCKDB_PATH", "s3://warehouse/ml_insights/raw_stockout_risk"
 )
 
 
@@ -54,15 +54,19 @@ def write_stockout_risk(
     """Write predictions to a DuckDB or Iceberg table and return inserted row count."""
 
     con = _connect(db_path)
-    rows = [
-        (
-            p["product_id"],
-            p["predicted_date"],
-            p["risk_score"],
-            p["confidence"],
+    rows = []
+    for p in predictions:
+        predicted_date = p["predicted_date"]
+        if isinstance(predicted_date, (date,)):
+            predicted_date = predicted_date.isoformat()
+        rows.append(
+            (
+                p["product_id"],
+                predicted_date,
+                p["risk_score"],
+                p["confidence"],
+            )
         )
-        for p in predictions
-    ]
 
     if rows:
         if db_path.startswith("s3://"):
@@ -124,4 +128,3 @@ __all__ = [
     "write_stockout_risk",
     "validate_stockout_risk",
 ]
-
