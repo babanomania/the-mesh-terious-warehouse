@@ -261,6 +261,11 @@ services:
         echo "Files in shared volumes:"
         echo
         ls -la /opt/airflow/{logs,dags,plugins,config}
+        echo
+        echo "Set permissions for /data volume"
+        echo
+        chown -R "${AIRFLOW_UID}:0" /data
+        ls -la /data
 
     # yamllint enable rule:line-length
     environment:
@@ -457,15 +462,18 @@ services:
     env_file: .env
     environment:
       SUPERSET_SECRET_KEY: ${SUPERSET_SECRET_KEY}
-      SUPERSET_SQLALCHEMY_DATABASE_URI: ${SUPERSET_SQLALCHEMY_DATABASE_URI}
+      SUPERSET_SQLALCHEMY_DATABASE_URI: ${SUPERSET_SQLALCHEMY_DATABASE_URI}\
     command: >
-      bash -c "superset db upgrade && \
+      bash -c "pip install duckdb-engine duckdb && \
+               superset db upgrade && \
                superset fab create-admin --username ${SUPERSET_ADMIN_USER:-admin} --firstname ${SUPERSET_ADMIN_FIRSTNAME:-Admin} --lastname ${SUPERSET_ADMIN_LASTNAME:-User} --email ${SUPERSET_ADMIN_EMAIL:-admin@example.com} --password ${SUPERSET_ADMIN_PASSWORD:-admin} || true && \
                superset init && \
+               python /app/superset_bootstrap/add_duckdb_iceberg.py && \
                exec superset run --host 0.0.0.0 --port 8088"
     volumes:
       - superset_data:/app/superset_home
       - duckdb_data:/data
+      - ./superset:/app/superset_bootstrap:ro
     ports:
       - "8088:8088"
 

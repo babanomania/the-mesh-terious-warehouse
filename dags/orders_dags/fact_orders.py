@@ -29,14 +29,7 @@ with DAG(
     default_args=DEFAULT_ARGS,
 ) as dag:
     logger.info("Configuring fact_orders DAG")
-    wait_for_staging = ExternalTaskSensor(
-        task_id="wait_for_stg_orders",
-        external_dag_id="stg_orders",
-        poke_interval=60,
-        timeout=60 * 60,
-    )
-
-    dbt_run_fact_orders = BashOperator(
+    BashOperator(
         task_id="dbt_run_fact_orders",
         # Run the fact model along with any upstream dependencies
         # so that staging models like ``stg_orders`` are built before the
@@ -46,4 +39,3 @@ with DAG(
         bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --select +fact_orders",
     )
 
-    wait_for_staging >> dbt_run_fact_orders
