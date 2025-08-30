@@ -217,7 +217,7 @@ with DAG(
         task_id="ensure_curated_service_database_schema",
         python_callable=_ensure_service_database_schema,
         op_kwargs={
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "svc_type_str": os.getenv("OM_CURATED_SERVICE_TYPE", "Iceberg"),
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "returns",
@@ -235,13 +235,7 @@ with DAG(
         {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from event_ts."},
     ]
 
-    STG_COLUMNS = [
-        {"name": "return_id", "dataType": "STRING", "description": "Return identifier (normalized)."},
-        {"name": "order_id", "dataType": "STRING", "description": "Order identifier (normalized)."},
-        {"name": "return_ts", "dataType": "TIMESTAMP", "description": "Return timestamp (cleaned)."},
-        {"name": "reason_code", "dataType": "STRING", "description": "Return reason (normalized)."},
-        {"name": "event_date", "dataType": "DATE", "description": "Partition date for downstream models."},
-    ]
+    # No staging layer; models are curated directly to Iceberg
 
     FACT_COLUMNS = [
         {"name": "return_id", "dataType": "STRING", "description": "Return key for the fact grain."},
@@ -265,19 +259,6 @@ with DAG(
         },
     )
 
-    update_stg = PythonOperator(
-        task_id="update_stg_returns_metadata",
-        python_callable=_update_table_metadata,
-        op_kwargs={
-            "table_name": "stg_returns",
-            "description": "The stg_returns model normalizes raw return events and computes the event_date partition field used by downstream models.",
-            "columns": STG_COLUMNS,
-            "create_if_missing": True,
-            "svc_name": "dbt",
-            "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "returns",
-        },
-    )
 
     update_fact = PythonOperator(
         task_id="update_fact_returns_metadata",
@@ -287,38 +268,24 @@ with DAG(
             "description": "The fact_returns model curates return events into an analytics-ready fact table partitioned by event_date.",
             "columns": FACT_COLUMNS,
             "create_if_missing": True,
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "returns",
         },
     )
 
-    lineage_raw_to_stg = PythonOperator(
-        task_id="add_lineage_raw_to_stg",
+    lineage_raw_to_fact = PythonOperator(
+        task_id="add_lineage_raw_to_fact",
         python_callable=_ensure_lineage,
         op_kwargs={
             "upstream_table": "raw_returns",
-            "downstream_table": "stg_returns",
-            "upstream_service": "rabbit_mq",
-            "downstream_service": "duckdb",
-            "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "upstream_schema": "returns",
-            "downstream_schema": "returns",
-        },
-    )
-
-    lineage_stg_to_fact = PythonOperator(
-        task_id="add_lineage_stg_to_fact",
-        python_callable=_ensure_lineage,
-        op_kwargs={
-            "upstream_table": "stg_returns",
             "downstream_table": "fact_returns",
-            "upstream_service": "dbt",
-            "downstream_service": "dbt",
+            "upstream_service": "rabbit_mq",
+            "downstream_service": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "upstream_schema": "returns",
             "downstream_schema": "returns",
         },
     )
 
-    [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_stg >> update_fact >> lineage_raw_to_stg >> lineage_stg_to_fact
+    [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_fact >> lineage_raw_to_fact

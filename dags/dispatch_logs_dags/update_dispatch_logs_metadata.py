@@ -206,7 +206,7 @@ with DAG(
         task_id="ensure_curated_service_database_schema",
         python_callable=_ensure_service_database_schema,
         op_kwargs={
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "svc_type_str": os.getenv("OM_CURATED_SERVICE_TYPE", "Iceberg"),
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "dispatch_logs",
@@ -225,21 +225,13 @@ with DAG(
         {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from event_ts."},
     ]
 
-    STG_COLUMNS = [
-        {"name": "dispatch_id", "dataType": "STRING", "description": "Dispatch identifier (normalized)."},
-        {"name": "order_id", "dataType": "STRING", "description": "Order identifier (normalized)."},
-        {"name": "vehicle_id", "dataType": "STRING", "description": "Vehicle identifier (normalized)."},
-        {"name": "status", "dataType": "STRING", "description": "Dispatch status (normalized)."},
-        {"name": "eta", "dataType": "TIMESTAMP", "description": "ETA (cleaned)."},
-        {"name": "event_date", "dataType": "DATE", "description": "Partition date for downstream models."},
-    ]
+    # No staging layer; models are curated directly to Iceberg
 
     FACT_COLUMNS = [
         {"name": "dispatch_id", "dataType": "STRING", "description": "Grain key for dispatch events."},
-        {"name": "order_id", "dataType": "STRING", "description": "Associated order."},
         {"name": "vehicle_id", "dataType": "STRING", "description": "Assigned vehicle."},
         {"name": "status", "dataType": "STRING", "description": "Current status."},
-        {"name": "eta", "dataType": "TIMESTAMP", "description": "Estimated time of arrival."},
+        {"name": "eta_ts", "dataType": "TIMESTAMP", "description": "Estimated time of arrival."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date for analytics."},
     ]
 
@@ -257,19 +249,6 @@ with DAG(
         },
     )
 
-    update_stg = PythonOperator(
-        task_id="update_stg_dispatch_logs_metadata",
-        python_callable=_update_table_metadata,
-        op_kwargs={
-            "table_name": "stg_dispatch_logs",
-            "description": "The stg_dispatch_logs model normalizes raw dispatch events and computes the event_date partition field used by downstream models.",
-            "columns": STG_COLUMNS,
-            "create_if_missing": True,
-            "svc_name": "dbt",
-            "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "dispatch_logs",
-        },
-    )
 
     update_fact = PythonOperator(
         task_id="update_fact_dispatch_logs_metadata",
@@ -279,38 +258,24 @@ with DAG(
             "description": "The fact_dispatch_logs model curates dispatch events into an analytics-ready fact table partitioned by event_date.",
             "columns": FACT_COLUMNS,
             "create_if_missing": True,
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "dispatch_logs",
         },
     )
 
-    lineage_raw_to_stg = PythonOperator(
-        task_id="add_lineage_raw_to_stg",
+    lineage_raw_to_fact = PythonOperator(
+        task_id="add_lineage_raw_to_fact",
         python_callable=_ensure_lineage,
         op_kwargs={
             "upstream_table": "raw_dispatch_logs",
-            "downstream_table": "stg_dispatch_logs",
-            "upstream_service": "rabbit_mq",
-            "downstream_service": "duckdb",
-            "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "upstream_schema": "dispatch_logs",
-            "downstream_schema": "dispatch_logs",
-        },
-    )
-
-    lineage_stg_to_fact = PythonOperator(
-        task_id="add_lineage_stg_to_fact",
-        python_callable=_ensure_lineage,
-        op_kwargs={
-            "upstream_table": "stg_dispatch_logs",
             "downstream_table": "fact_dispatch_logs",
-            "upstream_service": "dbt",
-            "downstream_service": "dbt",
+            "upstream_service": "rabbit_mq",
+            "downstream_service": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "upstream_schema": "dispatch_logs",
             "downstream_schema": "dispatch_logs",
         },
     )
 
-    [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_stg >> update_fact >> lineage_raw_to_stg >> lineage_stg_to_fact
+    [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_fact >> lineage_raw_to_fact

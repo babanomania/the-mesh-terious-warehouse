@@ -206,7 +206,7 @@ with DAG(
         task_id="ensure_curated_service_database_schema",
         python_callable=_ensure_service_database_schema,
         op_kwargs={
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "svc_type_str": os.getenv("OM_CURATED_SERVICE_TYPE", "Iceberg"),
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "inventory",
@@ -224,19 +224,13 @@ with DAG(
         {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from event_ts."},
     ]
 
-    STG_COLUMNS = [
-        {"name": "movement_id", "dataType": "STRING", "description": "Inventory movement (normalized)."},
-        {"name": "product_id", "dataType": "STRING", "description": "Product identifier (normalized)."},
-        {"name": "delta_qty", "dataType": "INT", "description": "Quantity delta (cleaned)."},
-        {"name": "source_type", "dataType": "STRING", "description": "Source (normalized)."},
-        {"name": "event_date", "dataType": "DATE", "description": "Partition date for downstream models."},
-    ]
+    # No staging layer; models are curated directly to Iceberg
 
     FACT_COLUMNS = [
-        {"name": "movement_id", "dataType": "STRING", "description": "Grain key for the inventory event."},
         {"name": "product_id", "dataType": "STRING", "description": "Product at event level."},
+        {"name": "movement_ts", "dataType": "TIMESTAMP", "description": "Timestamp of movement."},
         {"name": "delta_qty", "dataType": "INT", "description": "Quantity change at event."},
-        {"name": "source_type", "dataType": "STRING", "description": "Source type for the event."},
+        {"name": "movement_type", "dataType": "STRING", "description": "Source/movement type."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date for analytics."},
     ]
 
@@ -254,19 +248,6 @@ with DAG(
         },
     )
 
-    update_stg = PythonOperator(
-        task_id="update_stg_inventory_metadata",
-        python_callable=_update_table_metadata,
-        op_kwargs={
-            "table_name": "stg_inventory_movements",
-            "description": "The stg_inventory_movements model normalizes raw inventory events and computes the event_date partition field used by downstream models.",
-            "columns": STG_COLUMNS,
-            "create_if_missing": True,
-            "svc_name": "dbt",
-            "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "inventory",
-        },
-    )
 
     update_fact = PythonOperator(
         task_id="update_fact_inventory_metadata",
@@ -276,38 +257,24 @@ with DAG(
             "description": "The fact_inventory_movements model curates inventory events into an analytics-ready fact table partitioned by event_date.",
             "columns": FACT_COLUMNS,
             "create_if_missing": True,
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "inventory",
         },
     )
 
-    lineage_raw_to_stg = PythonOperator(
-        task_id="add_lineage_raw_to_stg",
+    lineage_raw_to_fact = PythonOperator(
+        task_id="add_lineage_raw_to_fact",
         python_callable=_ensure_lineage,
         op_kwargs={
             "upstream_table": "raw_inventory_movements",
-            "downstream_table": "stg_inventory_movements",
-            "upstream_service": "rabbit_mq",
-            "downstream_service": "duckdb",
-            "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "upstream_schema": "inventory",
-            "downstream_schema": "inventory",
-        },
-    )
-
-    lineage_stg_to_fact = PythonOperator(
-        task_id="add_lineage_stg_to_fact",
-        python_callable=_ensure_lineage,
-        op_kwargs={
-            "upstream_table": "stg_inventory_movements",
             "downstream_table": "fact_inventory_movements",
-            "upstream_service": "dbt",
-            "downstream_service": "dbt",
+            "upstream_service": "rabbit_mq",
+            "downstream_service": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "upstream_schema": "inventory",
             "downstream_schema": "inventory",
         },
     )
 
-    [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_stg >> update_fact >> lineage_raw_to_stg >> lineage_stg_to_fact
+    [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_fact >> lineage_raw_to_fact

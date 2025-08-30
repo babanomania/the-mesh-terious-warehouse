@@ -43,10 +43,12 @@ x-airflow-common:
     OPENMETADATA_JWT_TOKEN: ${OPENMETADATA_JWT_TOKEN}
     OPENMETADATA_HOSTPORT: ${OPENMETADATA_HOSTPORT}
     OM_SCHEMA_FQN: iceberg_service.warehouse.public
+    PYTHONPATH: /opt/airflow
     
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-.}/ml:/opt/airflow/ml:ro
     - airflow-app-volume:/opt/airflow/
     - duckdb_data:/data/:rw
   user: "${AIRFLOW_UID:-50000}:0"
@@ -370,6 +372,8 @@ services:
       - CATALOG_S3_PATH__STYLE__ACCESS=true
       - CATALOG_S3_ACCESS__KEY__ID=${MINIO_ROOT_USER:-minioadmin}
       - CATALOG_S3_SECRET__ACCESS__KEY=${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - iceberg_catalog:/tmp
     ports:
       - "8181:8181"
     depends_on:
@@ -486,3 +490,4 @@ volumes:
   duckdb_data:
   openmetadata_db_data:
   openmetadata_es_data:
+  iceberg_catalog:

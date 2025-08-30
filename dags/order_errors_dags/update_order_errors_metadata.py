@@ -205,7 +205,7 @@ with DAG(
         task_id="ensure_curated_service_database_schema",
         python_callable=_ensure_service_database_schema,
         op_kwargs={
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "svc_type_str": os.getenv("OM_CURATED_SERVICE_TYPE", "Iceberg"),
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "order_errors",
@@ -219,7 +219,7 @@ with DAG(
         {"name": "error_id", "dataType": "STRING", "description": "Unique error identifier."},
         {"name": "order_id", "dataType": "STRING", "description": "Related order identifier."},
         {"name": "error_code", "dataType": "STRING", "description": "Error code describing the issue."},
-        {"name": "detected_ts", "dataType": "TIMESTAMP", "description": "When the error was detected."},
+        {"name": "error_ts", "dataType": "TIMESTAMP", "description": "When the error was detected."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from event_ts."},
     ]
 
@@ -227,7 +227,7 @@ with DAG(
         {"name": "error_id", "dataType": "STRING", "description": "Grain key for the error event."},
         {"name": "order_id", "dataType": "STRING", "description": "Associated order."},
         {"name": "error_code", "dataType": "STRING", "description": "Error code."},
-        {"name": "detected_ts", "dataType": "TIMESTAMP", "description": "Detection timestamp."},
+        {"name": "error_ts", "dataType": "TIMESTAMP", "description": "Detection timestamp."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date for analytics."},
     ]
 
@@ -253,7 +253,7 @@ with DAG(
             "description": "The fact_order_errors model curates error events into an analytics-ready fact table partitioned by event_date.",
             "columns": FACT_COLUMNS,
             "create_if_missing": True,
-            "svc_name": "dbt",
+            "svc_name": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "sch_name": "order_errors",
         },
