@@ -1,12 +1,12 @@
-"""Airflow DAG to update OpenMetadata descriptions for orders datasets.
+"""Airflow DAG to update OpenMetadata descriptions for returns datasets.
 
 This DAG updates the descriptions for:
-- orders.raw_orders (raw table)
-- orders.stg_orders (staging view/table)
-- orders.fact_orders (fact view/table)
+- returns.raw_returns (raw table)
+- returns.stg_returns (staging view/table)
+- returns.fact_returns (fact view/table)
 
-It intentionally does not run dbt or any model builds. It only
-talks to OpenMetadata to upsert descriptions on existing entities.
+It only talks to OpenMetadata to upsert descriptions on existing entities
+or create them if missing, then adds lineage edges between them.
 """
 from __future__ import annotations
 
@@ -93,7 +93,7 @@ def _ensure_service_database_schema(
             CreateDatabaseServiceRequest(
                 name=svc_name,
                 serviceType=svc_type,
-                connection=None,  # demo/local; plug real connection config if needed
+                connection=None,
             )
         )
         service = md.get_by_name(entity=DatabaseService, fqn=svc_name)
@@ -120,16 +120,9 @@ def _update_table_metadata(
     create_if_missing: bool = True,
     svc_name: str = "dbt",
     db_name: str = "warehouse",
-    sch_name: str = "orders",
+    sch_name: str = "returns",
 ) -> None:
-    """Update description and (optionally) columns for a table/view.
-
-    - Only updates existing entities; skips creation to keep concerns separated.
-    - If `columns` is provided, we overwrite the column list with the given
-      schema (useful for adding column descriptions). Otherwise, we preserve
-      the current columns from OpenMetadata.
-    """
-    # Names used to build FQNs inside OpenMetadata
+    """Update description and (optionally) columns for a table/view."""
     schema_fqn = f"{svc_name}.{db_name}.{sch_name}"
     table_fqn = f"{schema_fqn}.{table_name}"
 
@@ -138,13 +131,11 @@ def _update_table_metadata(
 
     metadata = _get_metadata_client()
 
-    # Fetch existing table/view
     entity = metadata.get_by_name(entity=Table, fqn=table_fqn)
     if not entity:
         if not create_if_missing:
             logger.warning("OpenMetadata entity not found (skipping): %s", table_fqn)
             return
-        # Create with provided schema; require columns to create sensibly
         req = CreateTableRequest(
             name=table_name,
             tableType="Regular",
@@ -156,7 +147,6 @@ def _update_table_metadata(
         logger.info("Created table entity and set metadata for %s", table_fqn)
         return
 
-    # Re-upsert with updated description and columns
     name_val = getattr(entity.name, "__root__", entity.name)
     req = CreateTableRequest(
         name=name_val,
@@ -175,8 +165,8 @@ def _ensure_lineage(
     upstream_service: str = "rabbit_mq",
     downstream_service: str = "duckdb",
     db_name: str = "warehouse",
-    upstream_schema: str = "orders",
-    downstream_schema: str = "orders",
+    upstream_schema: str = "returns",
+    downstream_schema: str = "returns",
 ) -> None:
     """Add lineage edge upstream -> downstream if both entities exist."""
     up_fqn = f"{upstream_service}.{db_name}.{upstream_schema}.{upstream_table}"
@@ -206,14 +196,13 @@ def _ensure_lineage(
 DEFAULT_ARGS = {"owner": "data-eng", "retries": 0, "sla": timedelta(minutes=15)}
 
 with DAG(
-    dag_id="update_orders_metadata",
+    dag_id="update_returns_metadata",
     schedule="@daily",
     start_date=days_ago(1),
     catchup=False,
-    tags=["metadata", "orders"],
+    tags=["metadata", "returns"],
     default_args=DEFAULT_ARGS,
 ) as dag:
-    # Ensure both services (raw and curated) and schemas exist
     ensure_raw_entities = PythonOperator(
         task_id="ensure_raw_service_database_schema",
         python_callable=_ensure_service_database_schema,
@@ -221,7 +210,7 @@ with DAG(
             "svc_name": "rabbit_mq",
             "svc_type_str": os.getenv("OM_RAW_SERVICE_TYPE", "Iceberg"),
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "orders",
+            "sch_name": "returns",
         },
     )
     ensure_curated_entities = PythonOperator(
@@ -231,80 +220,76 @@ with DAG(
             "svc_name": "dbt",
             "svc_type_str": os.getenv("OM_CURATED_SERVICE_TYPE", "Iceberg"),
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "orders",
+            "sch_name": "returns",
         },
     )
-    # Column definitions used for documentation; adjust to match your models
-    RAW_ORDERS_COLUMNS = [
+
+    RAW_COLUMNS = [
         {"name": "event_id", "dataType": "STRING", "description": "Unique UUID for the emitted event."},
         {"name": "event_ts", "dataType": "TIMESTAMP", "description": "Event timestamp in ISO-8601."},
         {"name": "event_type", "dataType": "STRING", "description": "Type discriminator for the event."},
-        {"name": "order_id", "dataType": "STRING", "description": "Business key for the order."},
-        {"name": "product_id", "dataType": "STRING", "description": "Product identifier."},
-        {"name": "warehouse_id", "dataType": "STRING", "description": "Warehouse where the order is handled."},
-        {"name": "qty", "dataType": "INT", "description": "Ordered quantity."},
-        {"name": "order_ts", "dataType": "TIMESTAMP", "description": "Order creation timestamp."},
-        {"name": "region", "dataType": "STRING", "description": "Origin region label from the producer."},
+        {"name": "return_id", "dataType": "STRING", "description": "Business key for the return."},
+        {"name": "order_id", "dataType": "STRING", "description": "Related order identifier."},
+        {"name": "return_ts", "dataType": "TIMESTAMP", "description": "When the return occurred."},
+        {"name": "reason_code", "dataType": "STRING", "description": "Reason code for the return."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from event_ts."},
     ]
 
-    STG_ORDERS_COLUMNS = [
+    STG_COLUMNS = [
+        {"name": "return_id", "dataType": "STRING", "description": "Return identifier (normalized)."},
         {"name": "order_id", "dataType": "STRING", "description": "Order identifier (normalized)."},
-        {"name": "product_id", "dataType": "STRING", "description": "Product identifier (normalized)."},
-        {"name": "warehouse_id", "dataType": "STRING", "description": "Warehouse identifier (normalized)."},
-        {"name": "qty", "dataType": "INT", "description": "Ordered quantity (cleaned)."},
-        {"name": "order_ts", "dataType": "TIMESTAMP", "description": "Order timestamp (cleaned)."},
+        {"name": "return_ts", "dataType": "TIMESTAMP", "description": "Return timestamp (cleaned)."},
+        {"name": "reason_code", "dataType": "STRING", "description": "Return reason (normalized)."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date for downstream models."},
     ]
 
-    FACT_ORDERS_COLUMNS = [
-        {"name": "order_id", "dataType": "STRING", "description": "Order key for the fact grain."},
-        {"name": "product_id", "dataType": "STRING", "description": "Product at order level."},
-        {"name": "warehouse_id", "dataType": "STRING", "description": "Warehouse fulfilling the order."},
-        {"name": "qty", "dataType": "INT", "description": "Quantity at order event."},
-        {"name": "order_ts", "dataType": "TIMESTAMP", "description": "Event timestamp for the order."},
+    FACT_COLUMNS = [
+        {"name": "return_id", "dataType": "STRING", "description": "Return key for the fact grain."},
+        {"name": "order_id", "dataType": "STRING", "description": "Associated order."},
+        {"name": "return_ts", "dataType": "TIMESTAMP", "description": "Event timestamp for the return."},
+        {"name": "reason_code", "dataType": "STRING", "description": "Reason code."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date for analytics."},
     ]
 
     update_raw = PythonOperator(
-        task_id="update_raw_orders_metadata",
+        task_id="update_raw_returns_metadata",
         python_callable=_update_table_metadata,
         op_kwargs={
-            "table_name": "raw_orders",
-            "description": "Raw orders ingested from RabbitMQ.",
-            "columns": RAW_ORDERS_COLUMNS,
+            "table_name": "raw_returns",
+            "description": "Raw returns ingested from RabbitMQ.",
+            "columns": RAW_COLUMNS,
             "create_if_missing": True,
             "svc_name": "rabbit_mq",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "orders",
+            "sch_name": "returns",
         },
     )
 
     update_stg = PythonOperator(
-        task_id="update_stg_orders_metadata",
+        task_id="update_stg_returns_metadata",
         python_callable=_update_table_metadata,
         op_kwargs={
-            "table_name": "stg_orders",
-            "description": "The stg_orders model normalizes raw order events and computes the event_date partition field used by downstream models.",
-            "columns": STG_ORDERS_COLUMNS,
+            "table_name": "stg_returns",
+            "description": "The stg_returns model normalizes raw return events and computes the event_date partition field used by downstream models.",
+            "columns": STG_COLUMNS,
             "create_if_missing": True,
             "svc_name": "dbt",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "orders",
+            "sch_name": "returns",
         },
     )
 
     update_fact = PythonOperator(
-        task_id="update_fact_orders_metadata",
+        task_id="update_fact_returns_metadata",
         python_callable=_update_table_metadata,
         op_kwargs={
-            "table_name": "fact_orders",
-            "description": "The fact_orders model curates order events into an analytics-ready fact table partitioned by event_date.",
-            "columns": FACT_ORDERS_COLUMNS,
+            "table_name": "fact_returns",
+            "description": "The fact_returns model curates return events into an analytics-ready fact table partitioned by event_date.",
+            "columns": FACT_COLUMNS,
             "create_if_missing": True,
             "svc_name": "dbt",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "sch_name": "orders",
+            "sch_name": "returns",
         },
     )
 
@@ -312,13 +297,13 @@ with DAG(
         task_id="add_lineage_raw_to_stg",
         python_callable=_ensure_lineage,
         op_kwargs={
-            "upstream_table": "raw_orders",
-            "downstream_table": "stg_orders",
+            "upstream_table": "raw_returns",
+            "downstream_table": "stg_returns",
             "upstream_service": "rabbit_mq",
             "downstream_service": "duckdb",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "upstream_schema": "orders",
-            "downstream_schema": "orders",
+            "upstream_schema": "returns",
+            "downstream_schema": "returns",
         },
     )
 
@@ -326,15 +311,14 @@ with DAG(
         task_id="add_lineage_stg_to_fact",
         python_callable=_ensure_lineage,
         op_kwargs={
-            "upstream_table": "stg_orders",
-            "downstream_table": "fact_orders",
+            "upstream_table": "stg_returns",
+            "downstream_table": "fact_returns",
             "upstream_service": "dbt",
             "downstream_service": "dbt",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
-            "upstream_schema": "orders",
-            "downstream_schema": "orders",
+            "upstream_schema": "returns",
+            "downstream_schema": "returns",
         },
     )
 
-    # Update entities first (both zones), then add lineage
     [ensure_raw_entities, ensure_curated_entities] >> update_raw >> update_stg >> update_fact >> lineage_raw_to_stg >> lineage_stg_to_fact
