@@ -75,7 +75,7 @@ This project uses a **Lakehouse Star Schema** to combine flexibility with perfor
 - `docker-compose.yml`: Orchestrates MinIO, RabbitMQ, Iceberg REST, Airflow, OpenMetadata, and Superset
 - `ingestion/producers/`: Mock event generators per domain (orders, returns, inventory, logistics_core, ml_insights)
 - `dags/`: Airflow DAGs per subject area with per-region ingestion, staging, and fact loads
-- `dags/models/dbt/`: dbt models (staging, facts, and dimensions) used by transformation DAGs
+- `dags/*_dags/curate_*`: Airflow curation DAGs writing facts/dims to Iceberg
 - `superset/`: Bootstrap for DuckDB connection and example queries
 - `notebooks/`: ML notebooks for forecasting and analysis
 
@@ -170,7 +170,7 @@ OpenMetadata serves as the **discovery and governance hub** for all data product
 * **Apache Airflow** DAGs consume events, validate payloads, and load structured records into Iceberg tables.
 * Ingestion DAGs are defined per domain and registered automatically with metadata.
 
-Developer note: All dimensions are now defined as dbt models under `dags/models/dbt/dimensions`. The prior Iceberg DDLs in `dags/models/sql/` have been removed to keep a single source of truth for table definitions.
+Developer note: Transformations are implemented as Airflow DAGs that read raw Iceberg tables and materialize curated facts/dims back to Iceberg. The previous dbt project and SQL DDLs were removed to avoid duplication.
 
 ## Mock Data Generators by Domain
 

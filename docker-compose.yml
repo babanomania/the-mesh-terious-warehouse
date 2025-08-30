@@ -48,7 +48,6 @@ x-airflow-common:
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
-    - ${AIRFLOW_PROJ_DIR:-.}/ml:/opt/airflow/ml:ro
     - airflow-app-volume:/opt/airflow/
     - duckdb_data:/data/:rw
   user: "${AIRFLOW_UID:-50000}:0"

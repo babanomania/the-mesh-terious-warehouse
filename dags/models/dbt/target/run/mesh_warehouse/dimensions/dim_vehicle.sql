@@ -1,16 +1,19 @@
-{{
-  config(
-    materialized='incremental',
-    incremental_strategy='merge',
-    unique_key='vehicle_id'
-  )
-}}
+
+  
+    
+    
+
+    create  table
+      "warehouse"."main"."dim_vehicle"
+  
+    as (
+      
 
 with src as (
   select
     vehicle_id,
     cast(event_ts as date) as event_date
-  from {{ source('dispatch_logs', 'raw_dispatch_logs') }}
+  from iceberg_scan('s3://warehouse/dispatch_logs/raw_dispatch_logs', allow_moved_paths = true)
   where vehicle_id is not null and vehicle_id <> ''
 )
 
@@ -21,3 +24,7 @@ select
   cast(null as varchar) as current_location,
   event_date
 from src
+    );
+  
+  
+  
