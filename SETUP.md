@@ -101,13 +101,15 @@ python ingestion/start_generators.py --mode replay --replay-path ./data/orders.c
 
 ## 6. Run Project Checks
 
-Run the test suite with `pytest`:
+Run the test suite with `pytest` (tests now include per-domain DuckDB view verification that connects to MinIO and probe Iceberg tables):
 
 ```bash
 pytest -q
 ```
 
-The repo includes tests for generator schemas, DAG syntax, Iceberg schema, metadata bootstrapping, and basic ML utilities.
+Notes:
+- Ensure `DUCKDB_PATH`, `ICEBERG_WAREHOUSE`, and `MINIO_*` env vars are set for your environment so tests can reach DuckDB and MinIO.
+- Tests fail if a data product is missing or the corresponding DuckDB view is empty (> 0 rows required). Populate data via generators and DAGs before running tests.
 
 ## 7. Shut Down
 

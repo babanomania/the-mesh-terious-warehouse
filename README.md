@@ -265,3 +265,27 @@ This project is a reference implementation for building modern, enterprise-grade
 * **Data Fabric**: Centralized discovery, metadata, and policy enforcement
 
 The result is a system that supports independent team operations, shared intelligence, and future-ready data governance.
+
+## Testing
+
+Run tests with `pytest -v`. Tests include per-domain DuckDB view checks that configure S3/Iceberg in DuckDB and probe Iceberg tables in MinIO. Each test fails if its backing table is missing or if the resulting view is empty (requires > 0 rows).
+
+Use the DuckDB from the Docker volume for quick verification:
+
+1) Ensure the stack has run at least once (so `/data/warehouse.duckdb` exists in the `duckdb_data` volume):
+
+   docker compose up -d
+
+2) Copy the DuckDB file out of the `duckdb_data` volume into the local `tests/` folder and point tests at it:
+
+   export DUCKDB_PATH="$(pwd)/tests/warehouse.duckdb"
+   docker run --rm -v duckdb_data:/data -v "$PWD/tests":/host alpine:3.19 \
+     sh -c "cp -f /data/warehouse.duckdb /host/ && ls -lh /host/warehouse.duckdb"
+
+3) Run the tests:
+
+   pytest
+
+Notes:
+- The named volume is declared as `duckdb_data` in `docker-compose.yml` and is mounted at `/data` in services.
+- Ensure ingestion/curation DAGs have produced data; tests fail if a data product is missing or has zero rows.
