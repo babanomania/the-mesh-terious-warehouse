@@ -127,7 +127,7 @@ def _update_table_metadata(
     # Names used to build FQNs inside OpenMetadata
     svc_name = os.getenv("OM_SERVICE_NAME", "airflow")
     db_name = os.getenv("OM_DATABASE_NAME", "warehouse")
-    sch_name = os.getenv("OM_SCHEMA_NAME", "orders")
+    sch_name = "orders"
 
     schema_fqn = f"{svc_name}.{db_name}.{sch_name}"
     table_fqn = f"{schema_fqn}.{table_name}"
@@ -172,7 +172,7 @@ def _ensure_lineage(upstream_table: str, downstream_table: str) -> None:
     """Add lineage edge upstream -> downstream if both entities exist."""
     svc_name = os.getenv("OM_SERVICE_NAME", "airflow")
     db_name = os.getenv("OM_DATABASE_NAME", "warehouse")
-    sch_name = os.getenv("OM_SCHEMA_NAME", "orders")
+    sch_name = "orders"
 
     schema_fqn = f"{svc_name}.{db_name}.{sch_name}"
     up_fqn = f"{schema_fqn}.{upstream_table}"
