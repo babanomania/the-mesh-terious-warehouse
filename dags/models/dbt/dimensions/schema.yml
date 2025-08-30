@@ -1,0 +1,114 @@
+version: 2
+
+sources:
+  - name: dimensions
+    schema: dimensions
+    config:
+      external_location: "iceberg_scan('{{ env_var('ICEBERG_WAREHOUSE','s3://warehouse') }}/dimensions/{name}', allow_moved_paths = true)"
+    tables:
+      - name: dim_date
+      - name: dim_employee
+      - name: dim_error_code
+      - name: dim_product
+      - name: dim_route
+      - name: dim_vehicle
+      - name: dim_warehouse
+
+models:
+  - name: dim_date
+    description: "Calendar dimension with common date breakdowns."
+    columns:
+      - name: date_id
+        description: "Date key (DATE)"
+      - name: day
+        description: "Day of month"
+      - name: week
+        description: "ISO week number"
+      - name: month
+        description: "Month number"
+      - name: quarter
+        description: "Quarter number"
+      - name: year
+        description: "Year number"
+      - name: event_date
+        description: "Partition/date column for consistency"
+
+  - name: dim_employee
+    description: "Employee dimension."
+    columns:
+      - name: employee_id
+        description: "Employee identifier"
+      - name: role
+        description: "Role title"
+      - name: assigned_warehouse
+        description: "Warehouse assignment"
+      - name: shift_hours
+        description: "Shift hours"
+      - name: event_date
+        description: "Partition/date column for consistency"
+
+  - name: dim_error_code
+    description: "Error code lookup."
+    columns:
+      - name: error_code
+        description: "Error code"
+      - name: description
+        description: "Human-friendly description"
+      - name: severity_level
+        description: "Severity label"
+      - name: event_date
+        description: "Partition/date column for consistency"
+
+  - name: dim_product
+    description: "Product dimension."
+    columns:
+      - name: product_id
+        description: "Product identifier"
+      - name: name
+        description: "Product name"
+      - name: category
+        description: "Product category"
+      - name: unit_cost
+        description: "Unit cost"
+      - name: event_date
+        description: "Partition/date column for consistency"
+
+  - name: dim_route
+    description: "Route dimension."
+    columns:
+      - name: route_id
+        description: "Route identifier"
+      - name: region_covered
+        description: "Region covered"
+      - name: avg_duration
+        description: "Average duration (minutes)"
+      - name: event_date
+        description: "Partition/date column for consistency"
+
+  - name: dim_vehicle
+    description: "Vehicle fleet dimension."
+    columns:
+      - name: vehicle_id
+        description: "Vehicle identifier"
+      - name: type
+        description: "Vehicle type"
+      - name: capacity
+        description: "Capacity"
+      - name: current_location
+        description: "Current location text"
+      - name: event_date
+        description: "Partition/date column for consistency"
+
+  - name: dim_warehouse
+    description: "Warehouse dimension."
+    columns:
+      - name: warehouse_id
+        description: "Warehouse identifier"
+      - name: region
+        description: "Region"
+      - name: manager
+        description: "Warehouse manager"
+      - name: capacity
+        description: "Capacity"
+      - name: event_date
+        description: "Partition/date column for consistency"

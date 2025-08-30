@@ -161,6 +161,8 @@ OpenMetadata serves as the **discovery and governance hub** for all data product
 * **Apache Airflow** DAGs consume events, validate payloads, and load structured records into Iceberg tables.
 * Ingestion DAGs are defined per domain and registered automatically with metadata.
 
+Developer note: All dimensions are now defined as dbt models under `dags/models/dbt/dimensions`. The prior Iceberg DDLs in `dags/models/sql/` have been removed to keep a single source of truth for table definitions.
+
 ## Mock Data Generators by Domain
 
 Each domain simulates its own operational activity through dedicated mock data generators. These scripts produce synthetic JSON events to RabbitMQ queues, organized under `/ingestion/producers/<domain>/`.
