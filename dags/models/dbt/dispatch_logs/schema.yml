@@ -9,6 +9,10 @@ sources:
     tables:
       - name: raw_dispatch_logs
         description: "Raw dispatch log events ingested from RabbitMQ."
+      - name: stg_dispatch_logs
+        description: "Warehouse staging table for dispatch logs."
+      - name: fact_dispatch_logs
+        description: "Warehouse fact table for dispatch logs."
 
 models:
   - name: stg_dispatch_logs

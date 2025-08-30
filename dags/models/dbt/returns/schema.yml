@@ -9,6 +9,10 @@ sources:
     tables:
       - name: raw_returns
         description: "Raw returns ingested from RabbitMQ."
+      - name: stg_returns
+        description: "Warehouse staging table for returns."
+      - name: fact_returns
+        description: "Warehouse fact table for returns."
 
 models:
   - name: stg_returns

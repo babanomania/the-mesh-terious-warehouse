@@ -1,9 +1,5 @@
 {{ config(materialized='incremental', unique_key='movement_id') }}
 
-with source as (
-    select * from {{ source('inventory', 'raw_inventory_movements') }}
-)
-
 select
     event_id,
     event_ts,
@@ -12,8 +8,8 @@ select
     product_id,
     delta_qty,
     source_type,
-    cast(event_ts as date) as event_date
-from source
+    event_date
+from {{ ref('stg_inventory_movements') }}
 {% if is_incremental() %}
 where event_ts > (select max(event_ts) from {{ this }})
 {% endif %}

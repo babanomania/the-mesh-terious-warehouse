@@ -9,6 +9,10 @@ sources:
     tables:
       - name: raw_inventory_movements
         description: "Raw inventory movements ingested from RabbitMQ."
+      - name: stg_inventory_movements
+        description: "Warehouse staging table for inventory movements."
+      - name: fact_inventory_movements
+        description: "Warehouse fact table for inventory movements."
 
 models:
   - name: stg_inventory_movements

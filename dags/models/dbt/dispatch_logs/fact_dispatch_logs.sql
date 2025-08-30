@@ -1,9 +1,5 @@
 {{ config(materialized='incremental', unique_key='dispatch_id') }}
 
-with source as (
-    select * from {{ source('dispatch_logs', 'raw_dispatch_logs') }}
-)
-
 select
     event_id,
     event_ts,
@@ -13,8 +9,8 @@ select
     vehicle_id,
     status,
     eta,
-    cast(event_ts as date) as event_date
-from source
+    event_date
+from {{ ref('stg_dispatch_logs') }}
 {% if is_incremental() %}
 where event_ts > (select max(event_ts) from {{ this }})
 {% endif %}
