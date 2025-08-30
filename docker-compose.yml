@@ -42,11 +42,13 @@ x-airflow-common:
     AWS_EC2_METADATA_DISABLED: "true"
     OPENMETADATA_JWT_TOKEN: ${OPENMETADATA_JWT_TOKEN}
     OPENMETADATA_HOSTPORT: ${OPENMETADATA_HOSTPORT}
+    OM_SCHEMA_FQN: iceberg_service.warehouse.public
+    
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - airflow-app-volume:/opt/airflow/
-    - duckdb_data:/data/
+    - duckdb_data:/data/:rw
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -318,7 +320,7 @@ services:
     healthcheck:
       test: ["CMD", "rabbitmqctl", "status"]
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq\
+      - rabbitmq_data:/var/lib/rabbitmq/
 
   create-warehouse-bucket:
     image: minio/mc:latest
@@ -424,7 +426,8 @@ services:
     restart: "no"
 
   openmetadata:
-    image: openmetadata/server:1.9.1
+    #image: openmetadata/server:1.9.1
+    image: docker.getcollate.io/openmetadata/server:1.9.1
     environment:
       DB_HOST: openmetadata_db
       DB_PORT: 3306
@@ -434,20 +437,9 @@ services:
       ELASTICSEARCH_HOST: openmetadata_es
       ELASTICSEARCH_PORT: 9200
       SEARCH_TYPE: elasticsearch
-      OPENMETADATA_HEAP_OPTS: >
-        -Xms1g -Xmx1g
-        -XX:+UseG1GC
-        -XX:MaxDirectMemorySize=512m
-        -XX:MaxMetaspaceSize=384m
-        -XX:+HeapDumpOnOutOfMemoryError
-        -XX:HeapDumpPath=/data/om.hprof
-    mem_limit: 2.5g      # allow some swap headroom if enabled
+      OPENMETADATA_HEAP_OPTS: -Xms1g -Xmx1g
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8585/api/v1/system/version >/dev/null 2>&1 || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 20
-      start_period: 90s
+      test: [ "CMD", "wget", "-q", "--spider",  "http://localhost:8586/healthcheck" ]
     ports:
       - "8585:8585"
     depends_on:

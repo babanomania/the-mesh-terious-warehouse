@@ -121,40 +121,107 @@ def build_ingest_operator(
     logger.info("Building ingest DAG %s for queue %s", dag_id, queue_name)
 
     def register_with_openmetadata(rows_count: int) -> None:
-        # Lazy import heavy OpenMetadata dependencies
+        # Lazy imports
         from metadata.ingestion.ometa.ometa_api import OpenMetadata
+
+        # Entities & Requests
+        from metadata.generated.schema.entity.services.databaseService import DatabaseService, DatabaseServiceType
+        from metadata.generated.schema.api.services.createDatabaseService import CreateDatabaseServiceRequest
+
+        from metadata.generated.schema.entity.data.database import Database
+        from metadata.generated.schema.api.data.createDatabase import CreateDatabaseRequest
+
+        from metadata.generated.schema.entity.data.databaseSchema import DatabaseSchema
+        from metadata.generated.schema.api.data.createDatabaseSchema import CreateDatabaseSchemaRequest
+
+        from metadata.generated.schema.entity.data.table import Table
         from metadata.generated.schema.api.data.createTable import CreateTableRequest
-        from metadata.generated.schema.type.entityReference import EntityReference
+
+        # Connection/auth
         from metadata.generated.schema.entity.services.connections.metadata.openMetadataConnection import (
-            OpenMetadataConnection,
-            AuthProvider,
+            OpenMetadataConnection, AuthProvider
         )
-        from metadata.generated.schema.security.client.openMetadataJWTClientConfig import OpenMetadataJWTClientConfig
-    
+        from metadata.generated.schema.security.client.openMetadataJWTClientConfig import (
+            OpenMetadataJWTClientConfig
+        )
+
+        # ------------------ Config ------------------
+        svc_name = os.getenv("OM_SERVICE_NAME", "airflow")
+        svc_type_str = os.getenv("OM_SERVICE_TYPE", "Iceberg")  # Iceberg/Mysql/Postgres/Snowflake/...
+        db_name  = os.getenv("OM_DATABASE_NAME", "warehouse")
+        sch_name = os.getenv("OM_SCHEMA_NAME", "public")
+
+        db_fqn     = f"{svc_name}.{db_name}"
+        schema_fqn = f"{svc_name}.{db_name}.{sch_name}"
+        table_name = table_fqn.split(".")[-1]
+        table_fqn_full = f"{schema_fqn}.{table_name}"
+
+        # Normalize service type enum (case-insensitive)
+        try:
+            svc_type = next(t for t in DatabaseServiceType if t.name.lower() == svc_type_str.lower())
+        except StopIteration:
+            valid = ", ".join(t.name for t in DatabaseServiceType)
+            raise RuntimeError(f"Unknown OM_SERVICE_TYPE '{svc_type_str}'. Valid: {valid}")
+
+        # ------------------ Client ------------------
         server_config = OpenMetadataConnection(
             hostPort=os.getenv("OPENMETADATA_HOSTPORT", "http://openmetadata:8585/api"),
-            authProvider=AuthProvider.basic,
+            authProvider=AuthProvider.basic,  # keep aligned with your server setup
             securityConfig=OpenMetadataJWTClientConfig(
-                jwtToken=os.getenv("OPENMETADATA_JWT_TOKEN")  # set this env var
+                jwtToken=os.getenv("OPENMETADATA_JWT_TOKEN")
             ),
         )
         metadata = OpenMetadata(server_config)
 
-        request = CreateTableRequest(
-            name=table_fqn.split(".")[-1],
-            tableType="Regular",
-            columns=columns + [{"name": "event_date", "dataType": "DATE"}],
-            owner=EntityReference(
-                id="00000000-0000-0000-0000-000000000000",
-                type="user",
-            ),
-            description=table_description,
-            # Optionally: fullyQualifiedName=table_fqn
-            # databaseSchema=EntityReference(id=..., type="databaseSchema")
+        # ------------------ Ensure Service (get or create) ------------------
+        service = metadata.get_by_name(entity=DatabaseService, fqn=svc_name)
+        if not service:
+            # For demo use: connection=None. Replace with real connection config later.
+            metadata.create_or_update(
+                CreateDatabaseServiceRequest(
+                    name=svc_name,
+                    serviceType=svc_type,
+                    connection=None,
+                )
+            )
+            service = metadata.get_by_name(entity=DatabaseService, fqn=svc_name)
+            if not service:
+                raise RuntimeError(f"Failed to create or fetch DatabaseService '{svc_name}'")
+
+        # ------------------ Ensure Database (check before create) ------------------
+        database = metadata.get_by_name(entity=Database, fqn=db_fqn)
+        if not database:
+            database = metadata.create_or_update(
+                CreateDatabaseRequest(name=db_name, service=svc_name)  # service FQN is its name
+            )
+
+        # ------------------ Ensure Schema (check before create) ------------------
+        schema = metadata.get_by_name(entity=DatabaseSchema, fqn=schema_fqn)
+        if not schema:
+            schema = metadata.create_or_update(
+                CreateDatabaseSchemaRequest(name=sch_name, database=db_fqn)  # database FQN string
+            )
+
+        # ------------------ Ensure Table (check before create) ------------------
+        existing_table = metadata.get_by_name(entity=Table, fqn=table_fqn_full)
+        if existing_table:
+            logger.info("Table already exists in OpenMetadata: %s (skipping create)", table_fqn_full)
+        else:
+            request = CreateTableRequest(
+                name=table_name,
+                tableType="Regular",
+                columns=columns + [{"name": "event_date", "dataType": "DATE"}],
+                description=table_description,
+                databaseSchema=schema_fqn,  # 1.9.x expects STRING FQN here
+            )
+            metadata.create_or_update(request)
+            logger.info("Created table in OpenMetadata: %s", table_fqn_full)
+
+        logger.info(
+            "OpenMetadata upsert complete: service=%s, database=%s, schema=%s, table=%s (rows=%s)",
+            svc_name, db_name, sch_name, table_name, rows_count
         )
 
-        metadata.create_or_update(request)
-        logger.info("Registered %s rows to OpenMetadata", rows_count)
 
     def consume_and_write() -> None:
         # Lazy imports for runtime only
@@ -206,5 +273,5 @@ def build_ingest_operator(
     return PythonOperator(
         task_id=f"consume_{queue_name}",
         python_callable=consume_and_write,
-        sla=timedelta(minutes=15),
+        # sla=timedelta(minutes=15),
     )

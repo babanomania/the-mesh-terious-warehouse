@@ -2,7 +2,7 @@ mesh_warehouse:
   outputs:
     dev:
       type: duckdb
-      path: ":memory:"
+      path: 'warehouse.duckdb' #TODO fix the path to /data/warehouse.duckdb 
       extensions:
         - httpfs
         - iceberg

@@ -8,6 +8,10 @@ sources:
     tables:
       - name: raw_orders
         description: "Raw orders ingested from RabbitMQ."
+      - name: stg_orders
+        description: "warehouse staging table for orders."
+      - name: fact_orders
+        description: "Warehouse fact table for orders."
 
 models:
   - name: stg_orders

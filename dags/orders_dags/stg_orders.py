@@ -16,7 +16,7 @@ def days_ago(n):
 logger = logging.getLogger(__name__)
 
 DBT_PROJECT_DIR = Path(__file__).resolve().parents[1] / "models" / "dbt"
-DEFAULT_ARGS = {"owner": "data-eng", "retries": 1, "sla": timedelta(minutes=30)}
+DEFAULT_ARGS = {"owner": "data-eng", "retries": 1}
 
 with DAG(
     dag_id="stg_orders",
@@ -29,5 +29,5 @@ with DAG(
     logger.info("Configuring stg_orders DAG")
     BashOperator(
         task_id="dbt_run_stg_orders",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --models stg_orders",
+        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run --select stg_orders",
     )

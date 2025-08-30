@@ -1,3 +1,4 @@
 logs/
 target/
 .user.yml
+warehouse.duckdb
