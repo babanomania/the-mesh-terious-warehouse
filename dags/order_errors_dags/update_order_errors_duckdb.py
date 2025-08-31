@@ -8,6 +8,7 @@ from datetime import timedelta
 
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
+import logging
 from airflow.utils import timezone
 
 
@@ -26,6 +27,13 @@ def create_views() -> None:
 
     db_path = os.getenv("DUCKDB_PATH", "/data/warehouse.duckdb")
     con = duckdb.connect(database=db_path)
+    # Ensure the file is writable by Superset container as well
+    try:
+        from utils.duckdb_perms import ensure_world_writable
+
+        ensure_world_writable(db_path)
+    except Exception:
+        pass
 
     minio_endpoint = strip_scheme(os.getenv("MINIO_ENDPOINT", "http://minio:9000"))
     access_key = os.getenv("MINIO_ROOT_USER", "minioadmin")
@@ -42,10 +50,21 @@ def create_views() -> None:
     # No catalog attach; use iceberg_scan paths directly
 
     con.execute("CREATE SCHEMA IF NOT EXISTS order_errors;")
-    con.execute(
+    wh = os.getenv("ICEBERG_WAREHOUSE", "s3://warehouse").rstrip('/')
+    q = (
         "CREATE OR REPLACE VIEW order_errors.fact_order_errors AS "
-        "select * from iceberg_scan('" + os.getenv("ICEBERG_WAREHOUSE", "s3://warehouse").rstrip('/') + "/order_errors/fact_order_errors', allow_moved_paths = true)"
+        + "select * from iceberg_scan('"
+        + wh
+        + "/order_errors/fact_order_errors', allow_moved_paths = true)"
     )
+    try:
+        # Validate table exists by probing; if not, skip view creation
+        con.execute(
+            "select 1 from iceberg_scan('" + wh + "/order_errors/fact_order_errors', allow_moved_paths = true) limit 0"
+        )
+        con.execute(q)
+    except Exception as exc:
+        logging.warning("order_errors.fact_order_errors not present; skipping view creation: %s", exc)
 
 
 with DAG(

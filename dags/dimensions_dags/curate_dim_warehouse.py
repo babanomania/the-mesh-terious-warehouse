@@ -38,6 +38,7 @@ def curate() -> None:
                cast(null as int) as capacity,
                event_date
         from src
+        where true
         """,
         "event_date",
         m,

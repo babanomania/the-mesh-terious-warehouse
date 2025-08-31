@@ -27,6 +27,13 @@ def create_views() -> None:
 
     db_path = os.getenv("DUCKDB_PATH", "/data/warehouse.duckdb")
     con = duckdb.connect(database=db_path)
+    # Ensure the file is writable by Superset container as well
+    try:
+        from utils.duckdb_perms import ensure_world_writable
+
+        ensure_world_writable(db_path)
+    except Exception:
+        pass
 
     minio_endpoint = strip_scheme(os.getenv("MINIO_ENDPOINT", "http://minio:9000"))
     access_key = os.getenv("MINIO_ROOT_USER", "minioadmin")

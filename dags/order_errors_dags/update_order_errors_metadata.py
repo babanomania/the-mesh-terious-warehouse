@@ -220,14 +220,18 @@ with DAG(
         {"name": "order_id", "dataType": "STRING", "description": "Related order identifier."},
         {"name": "error_code", "dataType": "STRING", "description": "Error code describing the issue."},
         {"name": "error_ts", "dataType": "TIMESTAMP", "description": "When the error was detected."},
-        {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from event_ts."},
+        {"name": "event_date", "dataType": "DATE", "description": "Partition date derived from error_ts."},
     ]
 
     FACT_COLUMNS = [
+        {"name": "event_id", "dataType": "STRING", "description": "Unique UUID for the emitted event."},
+        {"name": "event_ts", "dataType": "TIMESTAMP", "description": "Event timestamp in ISO-8601."},
+        {"name": "event_type", "dataType": "STRING", "description": "Type discriminator for the event."},
         {"name": "error_id", "dataType": "STRING", "description": "Grain key for the error event."},
         {"name": "order_id", "dataType": "STRING", "description": "Associated order."},
         {"name": "error_code", "dataType": "STRING", "description": "Error code."},
         {"name": "error_ts", "dataType": "TIMESTAMP", "description": "Detection timestamp."},
+        {"name": "details", "dataType": "STRING", "description": "Optional error details if present."},
         {"name": "event_date", "dataType": "DATE", "description": "Partition date for analytics."},
     ]
 
@@ -266,7 +270,7 @@ with DAG(
             "upstream_table": "raw_order_errors",
             "downstream_table": "fact_order_errors",
             "upstream_service": "rabbit_mq",
-            "downstream_service": "duckdb",
+            "downstream_service": "iceberg",
             "db_name": os.getenv("OM_DATABASE_NAME", "warehouse"),
             "upstream_schema": "order_errors",
             "downstream_schema": "order_errors",

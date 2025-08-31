@@ -289,3 +289,92 @@ Notes:
 - The named volume is declared as `duckdb_data` in `docker-compose.yml` and is mounted at `/data` in services.
 - Ensure ingestion/curation DAGs have produced data; tests fail if a data product is missing or has zero rows.
 - `MINIO_ENDPOINT` defaults to `http://localhost:9000` for host-based tests; override if you’ve changed ports.
+
+### Data Model
+
+The warehouse uses a star-like schema with facts linked to dimensions. Below is the ER diagram rendered directly via Mermaid:
+
+```mermaid
+erDiagram
+  dimensions__dim_date {
+    date date_id PK
+    int day
+    int week
+    int month
+    int quarter
+    int year
+    date event_date
+  }
+  dimensions__dim_error_code {
+    string error_code
+    string description
+    string severity_level
+    date event_date
+  }
+  dimensions__dim_product {
+    string product_id PK
+    string name
+    string category
+    int unit_cost
+    date event_date
+  }
+  dimensions__dim_vehicle {
+    string vehicle_id PK
+    string type
+    int capacity
+    string current_location
+    date event_date
+  }
+  dimensions__dim_warehouse {
+    string warehouse_id PK
+    string region
+    string manager
+    int capacity
+    date event_date
+  }
+  dispatch_logs__fact_dispatch_logs {
+    string event_id
+    datetime event_ts
+    string event_type
+    string dispatch_id
+    string vehicle_id
+    string status
+    datetime eta_ts
+    date event_date
+  }
+  inventory__fact_inventory_movements {
+    string event_id
+    datetime event_ts
+    string event_type
+    string product_id
+    datetime movement_ts
+    int delta_qty
+    string movement_type
+    date event_date
+  }
+  orders__fact_orders {
+    string event_id
+    datetime event_ts
+    string event_type
+    string order_id
+    string product_id
+    string warehouse_id
+    datetime order_ts
+    int qty
+    date event_date
+  }
+  returns__fact_returns {
+    string event_id
+    datetime event_ts
+    string event_type
+    string return_id
+    string order_id
+    datetime return_ts
+    string reason_code
+    date event_date
+  }
+  dispatch_logs__fact_dispatch_logs o{--|| dimensions__dim_vehicle : vehicle_id
+  inventory__fact_inventory_movements o{--|| dimensions__dim_product : product_id
+  orders__fact_orders o{--|| dimensions__dim_product : product_id
+  orders__fact_orders o{--|| dimensions__dim_warehouse : warehouse_id
+```
